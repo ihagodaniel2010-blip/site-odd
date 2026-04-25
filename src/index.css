@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand palette converted to HSL */
+    --background: 280 33% 97%;          /* #F7F4FA */
+    --foreground: 0 0% 10%;             /* #1A1A1A */
+
+    --surface: 0 0% 100%;               /* #FFFFFF */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    --primary: 271 32% 27%;             /* #452E5A */
+    --primary-foreground: 0 0% 100%;
+    --primary-strong: 290 58% 27%;      /* #5D1C6A */
+    --primary-glow: 271 45% 45%;
+
+    --secondary: 280 30% 94%;
+    --secondary-foreground: 271 32% 27%;
+
+    --muted: 280 25% 94%;
+    --muted-foreground: 60 4% 47%;      /* #7A7A73 */
+
+    --accent: 271 32% 27%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 57%;           /* #D94A4A */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 148 58% 43%;             /* #2EAD6B */
+    --warning: 41 100% 45%;             /* #E7A100 */
+    --info: 217 91% 60%;                /* #3B82F6 */
+
+    --border: 0 0% 90%;                 /* #E5E5E5 */
+    --input: 0 0% 90%;
+    --ring: 271 32% 27%;
+
+    --radius: 1rem;
+
+    --gradient-primary: linear-gradient(135deg, hsl(271 32% 27%), hsl(290 58% 27%));
+    --gradient-soft: linear-gradient(180deg, hsl(280 33% 97%), hsl(0 0% 100%));
+    --shadow-card: 0 4px 24px -8px hsl(271 32% 27% / 0.08);
+    --shadow-soft: 0 2px 12px -4px hsl(0 0% 0% / 0.06);
+    --shadow-strong: 0 20px 60px -20px hsl(271 32% 27% / 0.25);
+    --shadow-float: 0 12px 40px -12px hsl(271 32% 27% / 0.18);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Fraunces', Georgia, serif;
+    letter-spacing: -0.02em;
+    @apply font-semibold;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .gradient-primary { background: var(--gradient-primary); }
+  .gradient-soft { background: var(--gradient-soft); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-strong { box-shadow: var(--shadow-strong); }
+  .shadow-float { box-shadow: var(--shadow-float); }
+  .transition-smooth { transition: var(--transition-smooth); }
+
+  .story-link {
+    @apply relative inline-block;
+  }
+  .story-link::after {
+    content: '';
+    @apply absolute left-0 -bottom-0.5 h-0.5 w-full origin-bottom-right scale-x-0 bg-primary transition-transform duration-300;
+  }
+  .story-link:hover::after {
+    @apply origin-bottom-left scale-x-100;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  .hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-strong);
+  }
+}
+
+@layer components {
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-32px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+  .reveal-left.is-visible { opacity: 1; transform: translateX(0); }
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(32px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+  .reveal-right.is-visible { opacity: 1; transform: translateX(0); }
+}
