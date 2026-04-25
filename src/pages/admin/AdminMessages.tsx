@@ -3,7 +3,7 @@ import { Mail } from "lucide-react";
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
@@ -137,3 +137,4 @@ const AdminMessages = () => {
 };
 
 export default AdminMessages;
+

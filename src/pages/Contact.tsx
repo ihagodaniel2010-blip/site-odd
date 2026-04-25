@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { CheckCircle2, Mail, MapPin, Phone, Send, Sparkles } from "lucide-react";
+import { CheckCircle2, ChevronDown, Mail, MapPin, Phone, Send, Sparkles } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,8 @@ import {
 import { usePricingRules } from "@/hooks/usePricingRules";
 import { useAreas, findZoneForCity } from "@/hooks/useAreas";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
 const Field = ({
@@ -131,6 +132,46 @@ const Contact = () => {
       service_zone: zone,
     };
 
+    let customerId: string | null = null;
+    const { data: existingCustomer } = await supabase
+      .from("customers")
+      .select("id")
+      .eq("email", form.email)
+      .maybeSingle();
+
+    if (existingCustomer?.id) {
+      customerId = existingCustomer.id;
+      await supabase
+        .from("customers")
+        .update({
+          name: form.full_name,
+          full_name: form.full_name,
+          phone: form.phone,
+          address: form.address,
+          city: form.city || null,
+          zip_code: form.zip_code,
+          notes: form.notes || null,
+        })
+        .eq("id", existingCustomer.id);
+    } else {
+      const { data: createdCustomer } = await supabase
+        .from("customers")
+        .insert({
+          name: form.full_name,
+          full_name: form.full_name,
+          email: form.email,
+          phone: form.phone,
+          address: form.address,
+          city: form.city || null,
+          zip_code: form.zip_code,
+          notes: form.notes || null,
+          status: "active",
+        })
+        .select("id")
+        .single();
+      customerId = createdCustomer?.id ?? null;
+    }
+
     const { error } = await supabase.from("estimate_requests").insert(payload);
     setSubmitting(false);
 
@@ -139,6 +180,32 @@ const Contact = () => {
       toast.error("Could not submit your request. Please try again or call us.");
       return;
     }
+
+    const { error: serviceRequestError } = await supabase.from("service_requests").insert({
+      customer_id: customerId,
+      full_name: form.full_name,
+      email: form.email,
+      phone: form.phone,
+      address: form.address,
+      city: form.city || null,
+      state: null,
+      zip_code: form.zip_code,
+      service_type: form.service_type,
+      bedrooms: form.bedrooms,
+      bathrooms: form.bathrooms,
+      square_feet: null,
+      preferred_date: form.preferred_date || null,
+      preferred_time: form.preferred_time || null,
+      frequency: form.frequency || null,
+      estimated_price: breakdown && !breakdown.manualReview ? breakdown.total : null,
+      status: "new_request",
+      notes: form.notes || null,
+    });
+
+    if (serviceRequestError && !isMissingRelationError(serviceRequestError)) {
+      console.error(serviceRequestError);
+    }
+
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -146,6 +213,50 @@ const Contact = () => {
   useEffect(() => {
     if (submitted) document.title = `Thank you — ${companyName}`;
   }, [submitted, companyName]);
+
+  const renderEstimateContent = () => {
+    if (breakdown) {
+      if (breakdown.manualReview) {
+        return (
+          <>
+            <p className="font-display text-2xl font-semibold leading-tight mb-2">Manual review</p>
+            <p className="text-sm opacity-90 leading-relaxed">
+              This area may require manual review. Submit your request and our team will confirm pricing.
+            </p>
+          </>
+        );
+      }
+
+      return (
+        <>
+          <p className="font-display text-5xl font-semibold leading-none mb-1">{formatUSD(breakdown.total)}</p>
+          <p className="text-sm opacity-90">{breakdown.serviceLabel}</p>
+          <div className="mt-5 pt-5 border-t border-white/20 space-y-1.5 text-sm">
+            <Row label="Base price" value={formatUSD(breakdown.base)} />
+            {breakdown.bedroomAddon > 0 && <Row label="Bedrooms" value={`+${formatUSD(breakdown.bedroomAddon)}`} />}
+            {breakdown.bathroomAddon > 0 && <Row label="Bathrooms" value={`+${formatUSD(breakdown.bathroomAddon)}`} />}
+            {breakdown.extras.map((e) => (
+              <Row key={e.label} label={e.label} value={`+${formatUSD(e.price)}`} />
+            ))}
+            {breakdown.discountAmount > 0 && (
+              <Row
+                label={`Frequency discount (${Math.round(breakdown.discountPct * 100)}%)`}
+                value={`−${formatUSD(breakdown.discountAmount)}`}
+              />
+            )}
+            {breakdown.distanceFee > 0 && <Row label="Distance fee" value={`+${formatUSD(breakdown.distanceFee)}`} />}
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <p className="font-display text-2xl font-semibold mb-1">Choose a service</p>
+        <p className="text-sm opacity-90">Pick a service type to see your live price.</p>
+      </>
+    );
+  };
 
   return (
     <Layout>
@@ -165,49 +276,34 @@ const Contact = () => {
 
       <section className="container py-12 md:py-16 grid lg:grid-cols-[1fr_1.6fr] gap-10">
         {/* Sidebar: contact info + live estimate */}
-        <aside className="space-y-5 lg:sticky lg:top-28 self-start">
+        <aside className="order-2 lg:order-1 space-y-5 lg:sticky lg:top-28 self-start">
           {/* Live estimate card */}
           {!submitted && (
-            <div className="bg-gradient-to-br from-primary to-primary-strong text-primary-foreground rounded-2xl p-6 shadow-strong">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-4 w-4" />
-                <p className="text-xs uppercase tracking-wider font-semibold opacity-90">Your Estimate</p>
+            <>
+              <details className="md:hidden bg-gradient-to-br from-primary to-primary-strong text-primary-foreground rounded-2xl p-4 shadow-strong group">
+                <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center justify-between gap-3">
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    <p className="text-xs uppercase tracking-wider font-semibold opacity-90">Your Estimate</p>
+                  </span>
+                  <span className="flex items-center gap-2">
+                    {breakdown && !breakdown.manualReview && (
+                      <span className="text-sm font-semibold">{formatUSD(breakdown.total)}</span>
+                    )}
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" />
+                  </span>
+                </summary>
+                <div className="mt-4 pt-4 border-t border-white/20">{renderEstimateContent()}</div>
+              </details>
+
+              <div className="hidden md:block bg-gradient-to-br from-primary to-primary-strong text-primary-foreground rounded-2xl p-6 shadow-strong">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-4 w-4" />
+                  <p className="text-xs uppercase tracking-wider font-semibold opacity-90">Your Estimate</p>
+                </div>
+                {renderEstimateContent()}
               </div>
-              {breakdown ? (
-                breakdown.manualReview ? (
-                  <>
-                    <p className="font-display text-2xl font-semibold leading-tight mb-2">Manual review</p>
-                    <p className="text-sm opacity-90 leading-relaxed">
-                      This area may require manual review. Submit your request and our team will confirm pricing.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="font-display text-5xl font-semibold leading-none mb-1">
-                      {formatUSD(breakdown.total)}
-                    </p>
-                    <p className="text-sm opacity-90">{breakdown.serviceLabel}</p>
-                    <div className="mt-5 pt-5 border-t border-white/20 space-y-1.5 text-sm">
-                      <Row label="Base price" value={formatUSD(breakdown.base)} />
-                      {breakdown.bedroomAddon > 0 && <Row label="Bedrooms" value={`+${formatUSD(breakdown.bedroomAddon)}`} />}
-                      {breakdown.bathroomAddon > 0 && <Row label="Bathrooms" value={`+${formatUSD(breakdown.bathroomAddon)}`} />}
-                      {breakdown.extras.map((e) => (
-                        <Row key={e.label} label={e.label} value={`+${formatUSD(e.price)}`} />
-                      ))}
-                      {breakdown.discountAmount > 0 && (
-                        <Row label={`Frequency discount (${Math.round(breakdown.discountPct * 100)}%)`} value={`−${formatUSD(breakdown.discountAmount)}`} />
-                      )}
-                      {breakdown.distanceFee > 0 && <Row label="Distance fee" value={`+${formatUSD(breakdown.distanceFee)}`} />}
-                    </div>
-                  </>
-                )
-              ) : (
-                <>
-                  <p className="font-display text-2xl font-semibold mb-1">Choose a service</p>
-                  <p className="text-sm opacity-90">Pick a service type to see your live price.</p>
-                </>
-              )}
-            </div>
+            </>
           )}
 
           <div className="bg-surface rounded-2xl p-6 border border-border shadow-card space-y-5">
@@ -245,7 +341,7 @@ const Contact = () => {
         </aside>
 
         {/* Form */}
-        <div className="bg-surface rounded-2xl p-6 md:p-10 border border-border shadow-strong">
+        <div className="order-1 lg:order-2 bg-surface rounded-2xl p-6 md:p-10 border border-border shadow-strong">
           {submitted ? (
             <div className="py-12 text-center space-y-4 animate-scale-in">
               <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-success/15 text-success">
@@ -439,3 +535,4 @@ const Row = ({ label, value }: { label: string; value: string }) => (
 );
 
 export default Contact;
+

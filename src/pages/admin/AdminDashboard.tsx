@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CalendarCheck, CheckCircle2, ClipboardList, DollarSign, Inbox } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminGuard } from "@/components/admin/AdminGuard";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatUSD } from "@/lib/pricing";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 
@@ -164,3 +164,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatUSD } from "@/lib/pricing";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
@@ -397,3 +397,4 @@ const Field = ({
 );
 
 export default AdminServices;
+

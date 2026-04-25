@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 
 export const useAdminSession = () => {
@@ -49,3 +49,4 @@ export const useAdminSession = () => {
 
   return { session, isAdmin, loading, signOut };
 };
+

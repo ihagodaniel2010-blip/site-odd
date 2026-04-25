@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { PricingRule, resolvePricing, ResolvedPricing } from "@/lib/pricing";
 
 export const usePricingRules = () => {
@@ -28,3 +28,4 @@ export const usePricingRules = () => {
 
   return { rules, pricing, loading, reload: load };
 };
+

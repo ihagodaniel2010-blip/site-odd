@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
@@ -265,3 +265,4 @@ const AdminMedia = () => {
 };
 
 export default AdminMedia;
+

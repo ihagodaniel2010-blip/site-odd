@@ -26,11 +26,13 @@ import AdminPricing from "./pages/admin/AdminPricing.tsx";
 import AdminCustomers from "./pages/admin/AdminCustomers.tsx";
 import AdminAreas from "./pages/admin/AdminAreas.tsx";
 import AdminSettings from "./pages/admin/AdminSettings.tsx";
-import { AdminCalendar } from "./pages/admin/AdminPlaceholder.tsx";
+import AdminCalendar from "./pages/admin/AdminCalendar.tsx";
 import AdminPortfolio from "./pages/admin/AdminPortfolio.tsx";
 import AdminServices from "./pages/admin/AdminServices.tsx";
 import AdminMedia from "./pages/admin/AdminMedia.tsx";
 import AdminMessages from "./pages/admin/AdminMessages.tsx";
+import AdminCleaners from "./pages/admin/AdminCleaners.tsx";
+import AdminReviews from "./pages/admin/AdminReviews.tsx";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +78,8 @@ const App = () => (
           <Route path="/admin/services" element={<AdminServices />} />
           <Route path="/admin/media" element={<AdminMedia />} />
           <Route path="/admin/messages" element={<AdminMessages />} />
+          <Route path="/admin/cleaners" element={<AdminCleaners />} />
+          <Route path="/admin/reviews" element={<AdminReviews />} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

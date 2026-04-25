@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { PricingRule, DEFAULT_PRICING_SEED } from "@/lib/pricing";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
@@ -230,3 +230,4 @@ const AdminPricing = () => {
 };
 
 export default AdminPricing;
+

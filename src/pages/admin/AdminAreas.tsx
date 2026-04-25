@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
@@ -293,3 +293,4 @@ const AdminAreas = () => {
 };
 
 export default AdminAreas;
+

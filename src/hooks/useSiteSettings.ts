@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useEffect, useState, useCallback } from "react";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 
@@ -117,3 +117,4 @@ export const useAdminSiteSettings = () => {
 
   return { rows, loading, reload: load, save };
 };
+

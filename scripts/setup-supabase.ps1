@@ -3,7 +3,7 @@ param(
   [string]$AccessToken,
 
   [Parameter(Mandatory = $false)]
-  [string]$ProjectRef = "uieidrvxhwmscptclisa"
+  [string]$ProjectRef = "npphcarhvobjsvdsjsyz"
 )
 
 $ErrorActionPreference = "Stop"
@@ -24,17 +24,21 @@ Write-Host "[5/6] Listing migrations..."
 npx supabase migration list
 
 Write-Host "[6/6] Basic REST health-check for admin tables..."
+$envLocalPath = Join-Path (Get-Location) ".env.local"
 $envPath = Join-Path (Get-Location) ".env"
-if (-not (Test-Path $envPath)) {
-  throw ".env file not found in current directory"
+
+if (Test-Path $envLocalPath) {
+  $envPath = $envLocalPath
+} elseif (-not (Test-Path $envPath)) {
+  throw "Neither .env.local nor .env was found in current directory"
 }
 
 $envContent = Get-Content $envPath
 $urlLine = $envContent | Where-Object { $_ -match '^VITE_SUPABASE_URL=' } | Select-Object -First 1
-$keyLine = $envContent | Where-Object { $_ -match '^VITE_SUPABASE_PUBLISHABLE_KEY=' } | Select-Object -First 1
+$keyLine = $envContent | Where-Object { $_ -match '^VITE_SUPABASE_ANON_KEY=' } | Select-Object -First 1
 
 if (-not $urlLine -or -not $keyLine) {
-  throw "VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY missing in .env"
+  throw "VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY missing in environment file"
 }
 
 $baseUrl = ($urlLine -split '=', 2)[1].Trim('"')
