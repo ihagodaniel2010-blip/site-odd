@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useCallback } from "react";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 
 export type SiteSetting = {
   id: string;
@@ -41,7 +42,10 @@ let cache: SettingsMap | null = null;
 const subscribers = new Set<(s: SettingsMap) => void>();
 
 const loadOnce = async (): Promise<SettingsMap> => {
-  const { data } = await supabase.from("site_settings").select("setting_key,setting_value");
+  const { data, error } = await supabase.from("site_settings").select("setting_key,setting_value");
+  if (error && !isMissingRelationError(error)) {
+    throw error;
+  }
   const map: SettingsMap = { ...DEFAULTS };
   (data ?? []).forEach((r: any) => {
     if (r.setting_value !== null && r.setting_value !== undefined) {
@@ -85,11 +89,16 @@ export const useAdminSiteSettings = () => {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("site_settings")
       .select("*")
       .order("category")
       .order("sort_order");
+    if (error && isMissingRelationError(error)) {
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     setRows((data as SiteSetting[]) ?? []);
     setLoading(false);
   }, []);

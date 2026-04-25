@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { formatUSD } from "@/lib/pricing";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
 type Service = {
@@ -57,6 +58,7 @@ const AdminServices = () => {
   const [editing, setEditing] = useState<Partial<Service> | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [schemaMissing, setSchemaMissing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -67,6 +69,12 @@ const AdminServices = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
+      if (isMissingRelationError(error)) {
+        setSchemaMissing(true);
+        setRows([]);
+        setLoading(false);
+        return;
+      }
       toast.error(error.message);
     }
 
@@ -181,6 +189,13 @@ const AdminServices = () => {
           <div className="bg-surface rounded-2xl border border-border shadow-card overflow-hidden">
             {loading ? (
               <div className="p-10 text-center text-sm text-muted-foreground">Loading...</div>
+            ) : schemaMissing ? (
+              <div className="p-12 text-center space-y-2">
+                <p className="font-semibold text-foreground">Services module pending database migration</p>
+                <p className="text-sm text-muted-foreground">
+                  Apply Supabase migrations to create the public.services table.
+                </p>
+              </div>
             ) : rows.length === 0 ? (
               <div className="p-12 text-center text-sm text-muted-foreground">
                 No services found. Add your first service.

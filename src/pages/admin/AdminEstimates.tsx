@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatUSD } from "@/lib/pricing";
 import { COMPANY_NAME } from "@/data/nav";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
 type Estimate = {
@@ -126,6 +127,7 @@ const AdminEstimates = () => {
   const [selected, setSelected] = useState<Estimate | null>(null);
   const [messageOpen, setMessageOpen] = useState(false);
   const [messageDraft, setMessageDraft] = useState("");
+  const [schemaMissing, setSchemaMissing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -133,7 +135,15 @@ const AdminEstimates = () => {
       .from("estimate_requests")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
+    if (error) {
+      if (isMissingRelationError(error)) {
+        setSchemaMissing(true);
+        setRows([]);
+        setLoading(false);
+        return;
+      }
+      toast.error(error.message);
+    }
     setRows((data as Estimate[]) ?? []);
     setLoading(false);
   };
@@ -313,6 +323,13 @@ const AdminEstimates = () => {
           <div className="bg-surface rounded-2xl border border-border shadow-card overflow-hidden">
             {loading ? (
               <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>
+            ) : schemaMissing ? (
+              <div className="p-10 text-center space-y-2">
+                <p className="font-semibold text-foreground">Estimate Requests module pending database migration</p>
+                <p className="text-sm text-muted-foreground">
+                  Apply Supabase migrations to create the public.estimate_requests table.
+                </p>
+              </div>
             ) : filtered.length === 0 ? (
               <div className="p-10 text-center text-sm text-muted-foreground">
                 No matching estimate requests.

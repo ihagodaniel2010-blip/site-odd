@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
 type PortfolioItem = {
@@ -50,6 +51,7 @@ const AdminPortfolio = () => {
   const [editing, setEditing] = useState<Partial<PortfolioItem> | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [schemaMissing, setSchemaMissing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -60,6 +62,12 @@ const AdminPortfolio = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
+      if (isMissingRelationError(error)) {
+        setSchemaMissing(true);
+        setRows([]);
+        setLoading(false);
+        return;
+      }
       toast.error(error.message);
     }
 
@@ -168,6 +176,13 @@ const AdminPortfolio = () => {
           <div className="bg-surface rounded-2xl border border-border shadow-card overflow-hidden">
             {loading ? (
               <div className="p-10 text-center text-sm text-muted-foreground">Loading...</div>
+            ) : schemaMissing ? (
+              <div className="p-12 text-center space-y-2">
+                <p className="font-semibold text-foreground">Portfolio module pending database migration</p>
+                <p className="text-sm text-muted-foreground">
+                  Apply Supabase migrations to create the public.portfolio_items table.
+                </p>
+              </div>
             ) : rows.length === 0 ? (
               <div className="p-12 text-center text-sm text-muted-foreground">
                 No portfolio items yet. Add your first project.

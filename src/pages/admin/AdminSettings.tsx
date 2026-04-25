@@ -81,6 +81,13 @@ const AdminSettings = () => {
 
           {loading ? (
             <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>
+          ) : rows.length === 0 ? (
+            <div className="p-10 text-center space-y-2 bg-surface rounded-2xl border border-border shadow-card">
+              <p className="font-semibold text-foreground">Website Settings module pending database migration</p>
+              <p className="text-sm text-muted-foreground">
+                Apply Supabase migrations to create and seed the public.site_settings table.
+              </p>
+            </div>
           ) : (
             <div className="space-y-6">
               {CATEGORIES.map((cat) => {

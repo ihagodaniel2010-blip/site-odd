@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { formatUSD } from "@/lib/pricing";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
 type Customer = {
@@ -59,6 +60,7 @@ const AdminCustomers = () => {
   const [editing, setEditing] = useState<Partial<Customer> | null>(null);
   const [historyOf, setHistoryOf] = useState<Customer | null>(null);
   const [history, setHistory] = useState<any[]>([]);
+  const [schemaMissing, setSchemaMissing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -66,7 +68,15 @@ const AdminCustomers = () => {
       .from("customers")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
+    if (error) {
+      if (isMissingRelationError(error)) {
+        setSchemaMissing(true);
+        setRows([]);
+        setLoading(false);
+        return;
+      }
+      toast.error(error.message);
+    }
     setRows((data as Customer[]) ?? []);
     setLoading(false);
   };
@@ -139,13 +149,20 @@ const AdminCustomers = () => {
 
   const openHistory = async (c: Customer) => {
     setHistoryOf(c);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("estimate_requests")
       .select("id,service_type,status,calculated_estimate,preferred_date,created_at")
       .or(
         `email.eq.${c.email ?? "__none__"},phone.eq.${c.phone ?? "__none__"}`
       )
       .order("created_at", { ascending: false });
+    if (error) {
+      if (!isMissingRelationError(error)) {
+        toast.error(error.message);
+      }
+      setHistory([]);
+      return;
+    }
     setHistory(data ?? []);
   };
 
@@ -209,6 +226,13 @@ const AdminCustomers = () => {
           <div className="bg-surface rounded-2xl border border-border shadow-card overflow-hidden">
             {loading ? (
               <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>
+            ) : schemaMissing ? (
+              <div className="p-12 text-center space-y-2">
+                <p className="font-semibold text-foreground">Customers module pending database migration</p>
+                <p className="text-sm text-muted-foreground">
+                  Apply Supabase migrations to create the public.customers table.
+                </p>
+              </div>
             ) : filtered.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <div className="mx-auto h-12 w-12 rounded-full bg-secondary grid place-items-center text-muted-foreground">

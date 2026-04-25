@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
 type Area = {
@@ -56,6 +57,7 @@ const AdminAreas = () => {
   const [rows, setRows] = useState<Area[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Partial<Area> | null>(null);
+  const [schemaMissing, setSchemaMissing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -63,7 +65,15 @@ const AdminAreas = () => {
       .from("areas_served")
       .select("*")
       .order("display_order");
-    if (error) toast.error(error.message);
+    if (error) {
+      if (isMissingRelationError(error)) {
+        setSchemaMissing(true);
+        setRows([]);
+        setLoading(false);
+        return;
+      }
+      toast.error(error.message);
+    }
     setRows((data as Area[]) ?? []);
     setLoading(false);
   };
@@ -147,6 +157,13 @@ const AdminAreas = () => {
           <div className="bg-surface rounded-2xl border border-border shadow-card overflow-hidden">
             {loading ? (
               <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>
+            ) : schemaMissing ? (
+              <div className="p-10 text-center space-y-2">
+                <p className="font-semibold text-foreground">Areas module pending database migration</p>
+                <p className="text-sm text-muted-foreground">
+                  Apply Supabase migrations to create the public.areas_served table.
+                </p>
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

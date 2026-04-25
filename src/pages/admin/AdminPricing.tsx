@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { PricingRule, DEFAULT_PRICING_SEED } from "@/lib/pricing";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
 const CATEGORY_META: Record<string, { title: string; subtitle: string; suffix?: string }> = {
@@ -27,6 +28,7 @@ const AdminPricing = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [schemaMissing, setSchemaMissing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -35,7 +37,15 @@ const AdminPricing = () => {
       .select("*")
       .order("category", { ascending: true })
       .order("sort_order", { ascending: true });
-    if (error) toast.error(error.message);
+    if (error) {
+      if (isMissingRelationError(error)) {
+        setSchemaMissing(true);
+        setRules([]);
+        setLoading(false);
+        return;
+      }
+      toast.error(error.message);
+    }
     setRules((data as unknown as PricingRule[]) ?? []);
     setLoading(false);
   };
@@ -140,6 +150,13 @@ const AdminPricing = () => {
           {loading ? (
             <div className="bg-surface rounded-2xl border border-border shadow-card p-10 text-center text-sm text-muted-foreground">
               Loading pricing rules…
+            </div>
+          ) : schemaMissing ? (
+            <div className="bg-surface rounded-2xl border border-border shadow-card p-10 text-center space-y-2">
+              <p className="font-semibold text-foreground">Pricing module pending database migration</p>
+              <p className="text-sm text-muted-foreground">
+                Apply Supabase migrations to create the public.pricing_rules table.
+              </p>
             </div>
           ) : (
             <div className="space-y-6">

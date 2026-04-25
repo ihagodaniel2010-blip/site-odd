@@ -5,6 +5,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { supabase } from "@/integrations/supabase/client";
 import { formatUSD } from "@/lib/pricing";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 
 type EstimateRow = {
   id: string;
@@ -37,6 +38,7 @@ const STATUS_COLORS: Record<string, string> = {
 const Dashboard = () => {
   const [rows, setRows] = useState<EstimateRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [schemaMissing, setSchemaMissing] = useState(false);
 
   useEffect(() => {
     supabase
@@ -44,7 +46,13 @@ const Dashboard = () => {
       .select("id,full_name,city,service_type,calculated_estimate,status,created_at")
       .order("created_at", { ascending: false })
       .limit(50)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error && isMissingRelationError(error)) {
+          setSchemaMissing(true);
+          setRows([]);
+          setLoading(false);
+          return;
+        }
         setRows((data as EstimateRow[]) ?? []);
         setLoading(false);
       });
@@ -101,6 +109,13 @@ const Dashboard = () => {
             </div>
             {loading ? (
               <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>
+            ) : schemaMissing ? (
+              <div className="p-10 text-center space-y-2">
+                <p className="font-semibold text-foreground">Dashboard data pending database migration</p>
+                <p className="text-sm text-muted-foreground">
+                  Apply Supabase migrations to create estimate and analytics tables.
+                </p>
+              </div>
             ) : rows.length === 0 ? (
               <div className="p-10 text-center text-sm text-muted-foreground">
                 No requests yet. Submitted estimates will appear here.

@@ -4,6 +4,7 @@ import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
 type MessageRow = {
@@ -20,6 +21,7 @@ type MessageRow = {
 const AdminMessages = () => {
   const [rows, setRows] = useState<MessageRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [schemaMissing, setSchemaMissing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -30,6 +32,12 @@ const AdminMessages = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
+      if (isMissingRelationError(error)) {
+        setSchemaMissing(true);
+        setRows([]);
+        setLoading(false);
+        return;
+      }
       toast.error(error.message);
     }
 
@@ -63,6 +71,16 @@ const AdminMessages = () => {
           <div className="bg-surface rounded-2xl border border-border shadow-card overflow-hidden">
             {loading ? (
               <div className="p-10 text-center text-sm text-muted-foreground">Loading...</div>
+            ) : schemaMissing ? (
+              <div className="p-16 text-center space-y-3">
+                <div className="mx-auto h-14 w-14 rounded-full bg-secondary grid place-items-center text-muted-foreground">
+                  <Mail className="h-6 w-6" />
+                </div>
+                <h2 className="font-display text-2xl font-semibold text-foreground">Messages module pending database migration.</h2>
+                <p className="text-sm text-muted-foreground">
+                  Apply Supabase migrations to create the public.messages table.
+                </p>
+              </div>
             ) : rows.length === 0 ? (
               <div className="p-16 text-center space-y-3">
                 <div className="mx-auto h-14 w-14 rounded-full bg-secondary grid place-items-center text-muted-foreground">
