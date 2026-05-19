@@ -1,8 +1,10 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   Calendar,
   CheckCircle2,
+  ClipboardList,
   Clock,
   Heart,
   Home as HomeIcon,
@@ -19,8 +21,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CtaBanner } from "@/components/CtaBanner";
+import { Seo } from "@/components/Seo";
 import { SectionHeader } from "@/components/SectionHeader";
 import { AreasWeServe } from "@/components/AreasWeServe";
+import { LOCAL_HOUSE_CLEANING_PAGES } from "@/data/localSeo";
+import { usePricingRules } from "@/hooks/usePricingRules";
 import heroKitchen from "@/assets/hero-kitchen.jpg";
 import imgHouse from "@/assets/service-house.jpg";
 import imgDeep from "@/assets/service-deep.jpg";
@@ -67,13 +72,54 @@ const testimonials = [
 ];
 
 const Home = () => {
+  const navigate = useNavigate();
+  const { pricing } = usePricingRules();
+  const [quickQuote, setQuickQuote] = useState({
+    zip: "",
+    service: "standard",
+    size: "1",
+    frequency: "one_time",
+  });
+
+  const onQuickQuoteSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const query = new URLSearchParams();
+    if (quickQuote.zip.trim()) query.set("zip", quickQuote.zip.trim());
+    if (quickQuote.service) query.set("service", quickQuote.service);
+    if (quickQuote.size) query.set("size", quickQuote.size);
+    if (quickQuote.frequency) query.set("frequency", quickQuote.frequency);
+
+    navigate(`/contact?${query.toString()}`);
+  };
+
   return (
     <Layout>
+      <Seo
+        title="House Cleaning Lowell MA | Instant Quotes, Local Trust, Fast Booking"
+        description="Paiva Cleaners Co. helps Lowell-area homeowners book trusted house cleaning fast. See pricing in 60 seconds, call now, or request recurring cleaning online."
+        canonicalPath="/"
+        keywords={[
+          "house cleaning lowell ma",
+          "cleaners chelmsford ma",
+          "cleaning service dracut ma",
+          "book house cleaning lowell",
+          "instant cleaning quote",
+        ]}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name: "Paiva Cleaners Co.",
+          description: "House and commercial cleaning in Lowell, MA and nearby communities.",
+          telephone: "(978) 319-8939",
+          areaServed: ["Lowell", "Chelmsford", "Dracut", "Tewksbury", "Billerica", "Westford"],
+        }}
+      />
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 gradient-soft" />
         <div className="absolute -top-40 -right-40 w-[480px] h-[480px] rounded-full bg-primary/10 blur-3xl -z-10" aria-hidden />
-        <div className="container py-12 md:py-20 grid lg:grid-cols-[1.05fr_1fr] gap-12 items-center">
+        <div className="container py-16 md:py-24 grid lg:grid-cols-[1.05fr_1fr] gap-8 md:gap-12 items-center">
           <div className="space-y-7 animate-fade-up">
             <span className="inline-block text-xs uppercase tracking-[0.22em] font-semibold text-primary px-3 py-1.5 rounded-full bg-surface shadow-soft">
               Trusted Cleaning Services
@@ -89,7 +135,7 @@ const Home = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button asChild variant="hero" size="xl">
-                <Link to="/contact">Get An Estimate <ArrowRight className="h-5 w-5" /></Link>
+                <Link to="/contact">Get My Instant Quote <ArrowRight className="h-5 w-5" /></Link>
               </Button>
               <Button asChild variant="outline" size="xl">
                 <Link to="/house-cleaning">View Services</Link>
@@ -113,26 +159,26 @@ const Home = () => {
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 via-transparent to-transparent" />
             </div>
 
-            <div className="absolute -left-3 sm:-left-8 top-1/4 bg-surface rounded-2xl shadow-float p-4 sm:p-5 max-w-[230px] animate-float">
+            <div className="absolute left-2 sm:left-4 lg:-left-8 top-[20%] md:top-1/4 bg-surface rounded-2xl shadow-float p-4 sm:p-5 max-w-[200px] md:max-w-[230px] animate-float hidden sm:block">
               <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-xl gradient-primary text-white">
+                <span className="grid h-11 w-11 place-items-center rounded-xl gradient-primary text-white shrink-0">
                   <Sparkles className="h-5 w-5" />
                 </span>
                 <div>
                   <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Easy</p>
-                  <p className="font-semibold text-sm text-foreground leading-tight">Request an estimate in minutes</p>
+                  <p className="font-semibold text-sm text-foreground leading-tight">See pricing in 60 seconds</p>
                 </div>
               </div>
             </div>
 
-            <div className="absolute -right-2 sm:-right-6 bottom-8 bg-surface rounded-2xl shadow-float p-4 max-w-[210px] animate-float" style={{ animationDelay: "1s" }}>
+            <div className="absolute right-2 sm:right-4 lg:-right-6 bottom-4 md:bottom-8 bg-surface rounded-2xl shadow-float p-4 max-w-[180px] md:max-w-[210px] animate-float hidden sm:block" style={{ animationDelay: "1s" }}>
               <div className="flex items-center gap-2 mb-1">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />
                 ))}
               </div>
-              <p className="text-sm font-semibold text-foreground">Residential &amp; Commercial</p>
-              <p className="text-xs text-muted-foreground">Trusted by 1,200+ clients</p>
+              <p className="text-sm font-semibold text-foreground">Trusted By Local</p>
+              <p className="text-xs text-muted-foreground">1,200+ happy clients</p>
             </div>
           </div>
         </div>
@@ -141,49 +187,73 @@ const Home = () => {
       {/* QUICK ESTIMATE FORM */}
       <section className="container -mt-4 md:-mt-12 mb-20 relative z-10">
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            window.location.href = "/contact";
-          }}
-          className="reveal bg-surface rounded-2xl shadow-strong border border-border p-6 md:p-8"
+          onSubmit={onQuickQuoteSubmit}
+          className="reveal bg-surface rounded-2xl shadow-strong border border-border p-5 sm:p-6 md:p-8"
         >
-          <div className="mb-6 text-center md:text-left">
-            <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground">
-              Get Your Free Cleaning Estimate
+          <div className="mb-5 sm:mb-6 text-center md:text-left">
+            <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-semibold text-foreground">
+              See Pricing In 60 Seconds
             </h2>
-            <p className="text-muted-foreground mt-1">Takes less than a minute. No card required.</p>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Built for local leads from Google and Facebook Ads. No card required.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <Input placeholder="ZIP Code" className="h-12 rounded-xl" />
-            <Select>
-              <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Service Type" /></SelectTrigger>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-2 md:gap-3">
+            <Input
+              placeholder="ZIP Code"
+              className="h-10 sm:h-11 md:h-12 rounded-lg sm:rounded-xl"
+              value={quickQuote.zip}
+              onChange={(event) =>
+                setQuickQuote((previous) => ({ ...previous, zip: event.target.value }))
+              }
+            />
+            <Select
+              value={quickQuote.service}
+              onValueChange={(value) =>
+                setQuickQuote((previous) => ({ ...previous, service: value }))
+              }
+            >
+              <SelectTrigger className="h-10 sm:h-11 md:h-12 rounded-lg sm:rounded-xl"><SelectValue placeholder="Service Type" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="house">House Cleaning</SelectItem>
-                <SelectItem value="deep">Deep Cleaning</SelectItem>
-                <SelectItem value="move">Move In / Move Out</SelectItem>
-                <SelectItem value="commercial">Commercial</SelectItem>
+                {pricing.services.map((service) => (
+                  <SelectItem key={service.key} value={service.key}>
+                    {service.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <Select>
-              <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Home Size" /></SelectTrigger>
+            <Select
+              value={quickQuote.size}
+              onValueChange={(value) =>
+                setQuickQuote((previous) => ({ ...previous, size: value }))
+              }
+            >
+              <SelectTrigger className="h-10 sm:h-11 md:h-12 rounded-lg sm:rounded-xl"><SelectValue placeholder="Home Size" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="studio">Studio</SelectItem>
-                <SelectItem value="1-2">1–2 Bedrooms</SelectItem>
-                <SelectItem value="3-4">3–4 Bedrooms</SelectItem>
-                <SelectItem value="5+">5+ Bedrooms</SelectItem>
+                {pricing.bedrooms.map((size) => (
+                  <SelectItem key={size.key} value={size.key}>
+                    {size.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <Select>
-              <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Frequency" /></SelectTrigger>
+            <Select
+              value={quickQuote.frequency}
+              onValueChange={(value) =>
+                setQuickQuote((previous) => ({ ...previous, frequency: value }))
+              }
+            >
+              <SelectTrigger className="h-10 sm:h-11 md:h-12 rounded-lg sm:rounded-xl"><SelectValue placeholder="Frequency" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="one">One-Time</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="biweekly">Bi-Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
+                {pricing.frequencies.map((frequency) => (
+                  <SelectItem key={frequency.key} value={frequency.key}>
+                    {frequency.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <Button type="submit" variant="hero" size="lg" className="h-12 rounded-xl">
-              Start Estimate <ArrowRight className="h-4 w-4" />
+            <Button type="submit" variant="hero" size="lg" className="h-10 sm:h-11 md:h-12 rounded-lg sm:rounded-xl w-full md:w-auto">
+              <span className="hidden sm:inline">See Pricing In 60 Seconds</span>
+              <span className="sm:hidden">See Pricing</span>
+              <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </form>
@@ -210,36 +280,36 @@ const Home = () => {
       </section>
 
       {/* SERVICES */}
-      <section className="bg-secondary/40 py-20">
+      <section className="bg-secondary/40 py-16 md:py-20">
         <div className="container">
           <SectionHeader
             eyebrow="Services"
             title="Cleaning Services Built Around Your Needs"
             subtitle="From a one-time deep clean to ongoing weekly visits, choose the right service for your space."
           />
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
             {services.map((s) => (
               <Link
                 to={s.to}
                 key={s.title}
-                className="reveal group bg-surface rounded-2xl overflow-hidden shadow-card hover-lift border border-border/60 flex flex-col"
+                className="reveal group bg-surface rounded-2xl overflow-hidden shadow-card hover:shadow-strong hover:-translate-y-1 border border-border/60 flex flex-col transition-all duration-300"
               >
-                <div className="aspect-[4/3] overflow-hidden">
+                <div className="aspect-[4/3] overflow-hidden bg-secondary/30">
                   <img
                     src={s.img}
                     alt={s.title}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
-                <div className="p-6 flex-1 flex flex-col">
-                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-secondary text-primary -mt-12 relative shadow-soft mb-4">
-                    <s.icon className="h-5 w-5" />
+                <div className="p-5 md:p-6 flex-1 flex flex-col">
+                  <span className="grid h-10 md:h-11 w-10 md:w-11 place-items-center rounded-lg md:rounded-xl bg-secondary text-primary -mt-10 md:-mt-12 relative shadow-soft mb-3 md:mb-4">
+                    <s.icon className="h-4 md:h-5 w-4 md:w-5" />
                   </span>
-                  <h3 className="font-display text-xl font-semibold text-foreground mb-2">{s.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-5 flex-1">{s.text}</p>
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:gap-2 transition-all">
-                    Learn More <ArrowRight className="h-4 w-4" />
+                  <h3 className="font-display text-lg md:text-xl font-semibold text-foreground mb-2 leading-tight">{s.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-4 md:mb-5 flex-1">{s.text}</p>
+                  <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary group-hover:gap-3 transition-all duration-200">
+                    Learn More <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </span>
                 </div>
               </Link>
@@ -249,28 +319,28 @@ const Home = () => {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="container py-20">
-        <SectionHeader eyebrow="How It Works" title="Three Steps To A Cleaner Space" />
-        <div className="grid md:grid-cols-3 gap-6 relative">
-          <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px border-t-2 border-dashed border-border" aria-hidden />
+      <section className="container py-16 md:py-20">
+        <SectionHeader eyebrow="How It Works" title="Three Steps To A Cleaner Space" subtitle="Our streamlined process gets your space sparkling in no time." />
+        <div className="grid md:grid-cols-3 gap-4 md:gap-6 relative">
+          <div className="hidden md:block absolute top-20 left-[16%] right-[16%] h-px border-t-2 border-dashed border-border/40" aria-hidden />
           {[
-            { title: "Request an estimate", text: "Share a few quick details about your space and schedule." },
-            { title: "Choose your cleaning schedule", text: "Pick a date, frequency, and any special requests." },
-            { title: "Enjoy a cleaner space", text: "Our trained team arrives on time and gets to work." },
+            { title: "Request an estimate", text: "Share a few quick details about your space and schedule.", icon: ClipboardList },
+            { title: "Choose your cleaning schedule", text: "Pick a date, frequency, and any special requests.", icon: Calendar },
+            { title: "Enjoy a cleaner space", text: "Our trained team arrives on time and gets to work.", icon: CheckCircle2 },
           ].map((s, i) => (
-            <div key={s.title} className="reveal relative bg-surface rounded-2xl p-7 text-center shadow-card hover-lift border border-border/60">
-              <span className="relative z-10 mx-auto grid h-20 w-20 place-items-center rounded-full gradient-primary text-white text-2xl font-display font-bold shadow-float mb-5">
+            <div key={s.title} className="reveal relative bg-surface rounded-xl md:rounded-2xl p-5 md:p-7 text-center shadow-card hover:shadow-strong hover:-translate-y-0.5 border border-border/60 transition-all duration-300">
+              <span className="relative z-10 mx-auto grid h-16 md:h-20 w-16 md:w-20 place-items-center rounded-full gradient-primary text-white text-xl md:text-2xl font-display font-bold shadow-float mb-4 md:mb-5">
                 {i + 1}
               </span>
-              <h3 className="font-display text-xl font-semibold text-foreground mb-2">{s.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">{s.text}</p>
+              <h3 className="font-display text-base md:text-xl font-semibold text-foreground mb-2">{s.title}</h3>
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{s.text}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* WHY US */}
-      <section className="bg-secondary/40 py-20">
+      <section className="bg-secondary/40 py-16 md:py-20">
         <div className="container">
           <SectionHeader eyebrow="Difference" title="Why Customers Choose Us" />
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -290,7 +360,7 @@ const Home = () => {
       </section>
 
       {/* PREMIUM SPLIT */}
-      <section className="container py-20">
+      <section className="container py-16 md:py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="reveal-left order-2 lg:order-1 relative">
             <div className="rounded-3xl overflow-hidden shadow-strong aspect-[4/5]">
@@ -322,32 +392,101 @@ const Home = () => {
               ))}
             </ul>
             <Button asChild variant="hero" size="lg">
-              <Link to="/contact">Get An Estimate <ArrowRight className="h-4 w-4" /></Link>
+              <Link to="/contact">Book a Cleaning Today <ArrowRight className="h-4 w-4" /></Link>
             </Button>
           </div>
         </div>
       </section>
 
+      <section className="container py-16 md:py-20">
+        <div className="max-w-3xl space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Local SEO Pages</p>
+          <h2 className="font-display text-3xl font-semibold text-foreground md:text-5xl">City pages designed to rank and convert</h2>
+          <p className="text-base leading-relaxed text-muted-foreground md:text-lg">
+            Browse city-specific house cleaning pages built for local intent, stronger Google relevance, and cleaner paid-ad conversion paths.
+          </p>
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {LOCAL_HOUSE_CLEANING_PAGES.map((page) => (
+            <Link
+              key={page.path}
+              to={page.path}
+              className="rounded-2xl border border-border bg-surface p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-strong"
+            >
+              <h3 className="font-display text-lg font-semibold text-foreground">House Cleaning {page.city}, MA</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{page.metaDescription}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* TESTIMONIALS */}
-      <section className="bg-secondary/40 py-20">
+      <section className="bg-secondary/40 py-16 md:py-20">
         <div className="container">
-          <SectionHeader eyebrow="Testimonials" title="What Customers Are Saying" />
-          <div className="grid md:grid-cols-3 gap-6">
+          <SectionHeader 
+            eyebrow="Client Testimonials" 
+            title="Trusted By Local Homeowners" 
+            subtitle="See why over 1,200+ customers choose Paiva Cleaners for their homes and businesses."
+          />
+          <div className="grid md:grid-cols-3 gap-5 md:gap-6">
             {testimonials.map((t) => (
-              <div key={t.name} className="reveal bg-surface rounded-2xl p-7 shadow-card hover-lift border border-border/60 flex flex-col">
-                <div className="flex gap-1 mb-4">
+              <div key={t.name} className="reveal group bg-surface rounded-xl md:rounded-2xl p-6 md:p-7 shadow-card hover:shadow-strong hover:border-primary/20 border border-border/60 transition-all duration-300 flex flex-col">
+                <div className="flex gap-0.5 mb-3 md:mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-warning text-warning" />
+                    <Star key={i} className="h-4 md:h-5 w-4 md:w-5 fill-warning text-warning" />
                   ))}
                 </div>
-                <p className="text-foreground/90 leading-relaxed mb-6 flex-1">"{t.quote}"</p>
-                <div className="pt-4 border-t border-border">
-                  <p className="font-semibold text-foreground">{t.name}</p>
-                  <p className="text-sm text-muted-foreground">{t.city}</p>
+                <p className="text-sm md:text-base text-foreground/90 leading-relaxed mb-5 md:mb-6 flex-1 italic">"{t.quote}"</p>
+                <div className="pt-4 md:pt-5 border-t border-border group-hover:border-primary/20 transition-colors duration-300">
+                  <p className="font-semibold text-foreground text-sm md:text-base">{t.name}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">{t.city}</p>
                 </div>
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* BEFORE / AFTER */}
+      <section className="container py-16 md:py-20">
+        <SectionHeader
+          eyebrow="The Difference We Make"
+          title="Transformations That Speak For Themselves"
+          subtitle="See how our detailed cleaning process restores homes and offices to pristine condition."
+        />
+        <div className="grid lg:grid-cols-3 gap-5 md:gap-6">
+          {[
+            { label: "Living Room", before: "Cluttered with dust", after: "Sparkling & fresh", icon: HomeIcon },
+            { label: "Kitchen", before: "Grease buildup", after: "Gleaming surfaces", icon: Sparkles },
+            { label: "Bathrooms", before: "Soap scum & grime", after: "Hospital clean", icon: Wrench },
+          ].map((item, i) => (
+            <div key={i} className="reveal relative group overflow-hidden rounded-2xl shadow-card border border-border/60 hover:shadow-strong transition-all duration-300">
+              <div className="aspect-[4/3] bg-gradient-to-br from-muted to-muted-foreground/20 flex items-center justify-center relative">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <span className="grid h-12 w-12 place-items-center rounded-xl bg-muted mx-auto mb-3">
+                      <item.icon className="h-6 w-6 text-foreground/40" />
+                    </span>
+                    <p className="text-sm font-medium text-foreground/60">{item.before}</p>
+                  </div>
+                </div>
+                <div className="absolute top-0 left-0 px-3 py-2 bg-warning/90 text-white text-xs font-semibold rounded-br-lg">Before</div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary-strong/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-2xl">
+                <div className="text-center">
+                  <span className="grid h-12 w-12 place-items-center rounded-xl bg-secondary text-primary mx-auto mb-3">
+                    <item.icon className="h-6 w-6" />
+                  </span>
+                  <p className="text-sm font-medium text-foreground">{item.after}</p>
+                </div>
+                <div className="absolute top-0 left-0 px-3 py-2 bg-success/90 text-white text-xs font-semibold rounded-br-lg">After</div>
+              </div>
+              <div className="p-5 md:p-6 relative z-10">
+                <h3 className="font-display text-lg font-semibold text-foreground mb-1">{item.label}</h3>
+                <p className="text-xs text-muted-foreground group-hover:text-primary transition-colors duration-300">Hover to see transformation →</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

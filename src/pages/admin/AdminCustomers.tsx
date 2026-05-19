@@ -20,7 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { formatUSD } from "@/lib/pricing";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
@@ -39,6 +40,11 @@ type Customer = {
   status: string;
   created_at: string;
 };
+
+type EstimateHistoryItem = Pick<
+  Database["public"]["Tables"]["estimate_requests"]["Row"],
+  "id" | "service_type" | "status" | "calculated_estimate" | "preferred_date" | "created_at"
+>;
 
 const empty = (): Partial<Customer> => ({
   name: "",
@@ -59,7 +65,7 @@ const AdminCustomers = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [editing, setEditing] = useState<Partial<Customer> | null>(null);
   const [historyOf, setHistoryOf] = useState<Customer | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<EstimateHistoryItem[]>([]);
   const [schemaMissing, setSchemaMissing] = useState(false);
 
   const load = async () => {
@@ -111,7 +117,7 @@ const AdminCustomers = () => {
       toast.error("Name is required");
       return;
     }
-    const payload: any = {
+    const payload: Database["public"]["Tables"]["customers"]["Insert"] = {
       name: editing.name.trim(),
       phone: editing.phone || null,
       email: editing.email || null,
@@ -163,7 +169,7 @@ const AdminCustomers = () => {
       setHistory([]);
       return;
     }
-    setHistory(data ?? []);
+    setHistory((data ?? []) as EstimateHistoryItem[]);
   };
 
   return (
@@ -475,4 +481,3 @@ const Info = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
 );
 
 export default AdminCustomers;
-

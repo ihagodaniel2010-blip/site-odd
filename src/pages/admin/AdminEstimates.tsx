@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Eye, Mail, MessageCircle, Phone, Search, Send, Trash2 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminGuard } from "@/components/admin/AdminGuard";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +24,26 @@ import { formatUSD } from "@/lib/pricing";
 import { COMPANY_NAME } from "@/data/nav";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
+
+type EstimateStatus = Database["public"]["Enums"]["estimate_status"];
+
+type EstimateBreakdown = {
+  base: number;
+  serviceLabel: string;
+  bedroomAddon: number;
+  bathroomAddon: number;
+  extrasTotal: number;
+  extras: { label: string; price: number }[];
+  subtotal: number;
+  discountPct: number;
+  discountAmount: number;
+  distanceFee: number;
+  zone: string | null;
+  total: number;
+  manualReview: boolean;
+  minimum: number;
+};
 
 type Estimate = {
   id: string;
@@ -42,7 +62,7 @@ type Estimate = {
   preferred_time: string | null;
   notes: string | null;
   calculated_estimate: number | null;
-  estimate_breakdown: any;
+  estimate_breakdown: EstimateBreakdown | null;
   service_zone: string | null;
   status: string;
   admin_notes: string | null;
@@ -166,10 +186,10 @@ const AdminEstimates = () => {
     return true;
   });
 
-  const updateStatus = async (id: string, status: string) => {
+  const updateStatus = async (id: string, status: EstimateStatus) => {
     const { error } = await supabase
       .from("estimate_requests")
-      .update({ status: status as any })
+      .update({ status })
       .eq("id", id);
     if (error) {
       toast.error(error.message);
@@ -246,7 +266,7 @@ const AdminEstimates = () => {
     setMessageOpen(false);
   };
 
-  const breakdownView = (raw: any) => {
+  const breakdownView = (raw: EstimateBreakdown | null) => {
     if (!raw || typeof raw !== "object") return null;
     return (
       <div className="text-sm space-y-1.5">
@@ -258,8 +278,8 @@ const AdminEstimates = () => {
           <Row label="Bathrooms" value={`+${formatUSD(Number(raw.bathroomAddon))}`} />
         )}
         {Array.isArray(raw.extras) &&
-          raw.extras.map((e: any, i: number) => (
-            <Row key={i} label={e.label} value={`+${formatUSD(Number(e.price))}`} />
+          raw.extras.map((extra, i) => (
+            <Row key={i} label={extra.label} value={`+${formatUSD(Number(extra.price))}`} />
           ))}
         {Number(raw.discountAmount ?? 0) > 0 && (
           <Row
@@ -624,4 +644,3 @@ const Row = ({ label, value, bold }: { label: string; value: string; bold?: bool
 );
 
 export default AdminEstimates;
-

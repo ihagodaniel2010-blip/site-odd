@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 export const CtaBanner = ({
   title = "Ready For A Cleaner Space?",
   subtitle = "Request your estimate today and let us build a cleaning plan around your needs.",
-  cta = "Get Estimate",
+  cta = "Book a Cleaning Today",
   to = "/contact",
 }: {
   title?: string;

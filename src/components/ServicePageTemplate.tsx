@@ -30,9 +30,20 @@ export const ServicePageTemplate = (p: ServicePageProps) => (
             {p.title}
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-xl">{p.description}</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "Insured & bonded",
+              "Trusted by local homeowners",
+              "Fast response times",
+            ].map((item) => (
+              <span key={item} className="rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-foreground shadow-soft">
+                {item}
+              </span>
+            ))}
+          </div>
           <div className="flex flex-wrap gap-3 pt-2">
             <Button asChild variant="hero" size="lg">
-              <Link to="/contact">Get An Estimate <ArrowRight className="h-4 w-4" /></Link>
+              <Link to="/contact">Book a Cleaning Today <ArrowRight className="h-4 w-4" /></Link>
             </Button>
             <Button asChild variant="outline" size="lg">
               <Link to="/house-cleaning">View All Services</Link>
@@ -41,7 +52,7 @@ export const ServicePageTemplate = (p: ServicePageProps) => (
         </div>
         <div className="reveal-right relative">
           <div className="relative rounded-2xl overflow-hidden shadow-strong aspect-[4/3]">
-            <img src={p.heroImage} alt={p.title} className="w-full h-full object-cover" />
+            <img src={p.heroImage} alt={p.title} className="w-full h-full object-cover" fetchPriority="high" />
           </div>
           <div className="absolute -bottom-6 -left-4 md:-left-8 bg-surface rounded-2xl shadow-float p-5 max-w-[240px] animate-float">
             <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Trusted</p>

@@ -35,8 +35,8 @@ const AdminSettings = () => {
     try {
       await save(key, draft[key] ?? "");
       toast.success("Saved");
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed to save");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to save");
     } finally {
       setSavingKey(null);
     }
@@ -51,8 +51,8 @@ const AdminSettings = () => {
         }
       }
       toast.success("All changes saved");
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed to save");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to save");
     } finally {
       setSavingKey(null);
     }

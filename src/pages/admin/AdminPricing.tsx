@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { PricingRule, DEFAULT_PRICING_SEED } from "@/lib/pricing";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
 const CATEGORY_META: Record<string, { title: string; subtitle: string; suffix?: string }> = {
   service: { title: "Services — Base Price", subtitle: "Starting price for each service type.", suffix: "$" },
-  bedroom: { title: "Bedrooms", subtitle: "Add-on price per bedroom count.", suffix: "$" },
+  bedroom: { title: "Home Size / Bedrooms", subtitle: "Used by Contact home-size selector and bedroom refinement.", suffix: "$" },
   bathroom: { title: "Bathrooms", subtitle: "Add-on price per bathroom count.", suffix: "$" },
   frequency: { title: "Frequency Discounts", subtitle: "Percentage discount applied to subtotal.", suffix: "%" },
   zone: { title: "Service Area Fees", subtitle: "Distance fee per service zone.", suffix: "$" },
@@ -69,7 +69,7 @@ const AdminPricing = () => {
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
     for (const r of rules) {
-      if (Number.isNaN(Number(r.value)) || r.value === ("" as any) || r.value === null) {
+      if (!Number.isFinite(r.value)) {
         errs[r.id] = "Value cannot be empty";
         continue;
       }
@@ -193,7 +193,7 @@ const AdminPricing = () => {
                               min={0}
                               max={r.value_type === "percentage" ? 100 : undefined}
                               value={r.value}
-                              onChange={(e) => updateRule(r.id, { value: e.target.value as any })}
+                              onChange={(e) => updateRule(r.id, { value: Number(e.target.value) })}
                               className={`w-28 h-10 rounded-lg ${errors[r.id] ? "border-error" : ""}`}
                             />
                             <span className="text-sm text-muted-foreground w-4">
@@ -230,4 +230,3 @@ const AdminPricing = () => {
 };
 
 export default AdminPricing;
-

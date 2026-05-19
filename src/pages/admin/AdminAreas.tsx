@@ -20,7 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 
@@ -88,7 +89,7 @@ const AdminAreas = () => {
       toast.error("City is required");
       return;
     }
-    const payload: any = {
+    const payload: Database["public"]["Tables"]["areas_served"]["Insert"] = {
       city: editing.city.trim(),
       state: (editing.state || "MA").trim(),
       zone: editing.zone || "regular",
@@ -293,4 +294,3 @@ const AdminAreas = () => {
 };
 
 export default AdminAreas;
-

@@ -4,6 +4,7 @@ import { ArrowRight, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionHeader } from "./SectionHeader";
+import { getHouseCleaningCityPath } from "@/data/localSeo";
 import { useAreas } from "@/hooks/useAreas";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { cn } from "@/lib/utils";
@@ -18,7 +19,7 @@ const MAP_SRC =
   "https://www.google.com/maps?q=30+3rd+Street,+Lowell,+MA&hl=en&z=11&output=embed";
 
 export const AreasWeServe = ({ compact = false }: { compact?: boolean }) => {
-  const { areas, loading } = useAreas();
+  const { areas, loading, error } = useAreas();
   const { settings } = useSiteSettings();
   const [zip, setZip] = useState("");
   const [filter, setFilter] = useState<string>("all");
@@ -43,7 +44,7 @@ export const AreasWeServe = ({ compact = false }: { compact?: boolean }) => {
   };
 
   return (
-    <section id="areas" className="py-20 bg-gradient-to-b from-secondary/30 to-background">
+    <section id="areas" className="py-12 md:py-20 bg-gradient-to-b from-secondary/30 to-background">
       <div className="container">
         <SectionHeader
           eyebrow="Service Coverage"
@@ -51,10 +52,10 @@ export const AreasWeServe = ({ compact = false }: { compact?: boolean }) => {
           subtitle={`${companyName} proudly serves Lowell, MA and nearby communities within a flexible service radius.`}
         />
 
-        <div className="grid lg:grid-cols-[1.15fr_1fr] gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-6 md:gap-8 items-start">
           {/* Map card */}
-          <div className="reveal bg-surface rounded-3xl shadow-strong border border-border overflow-hidden">
-            <div className="aspect-[4/3] sm:aspect-[16/10] w-full bg-secondary/60 relative">
+          <div className="reveal bg-surface rounded-2xl md:rounded-3xl shadow-strong border border-border overflow-hidden">
+            <div className="aspect-[4/3] sm:aspect-[16/10] lg:aspect-[4/3] w-full bg-secondary/60 relative">
               <iframe
                 title="Paiva Cleaners Co. service area map"
                 src={MAP_SRC}
@@ -64,15 +65,15 @@ export const AreasWeServe = ({ compact = false }: { compact?: boolean }) => {
                 allowFullScreen
               />
             </div>
-            <div className="p-6 md:p-7 space-y-5">
-              <div className="flex items-start gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-secondary text-primary shrink-0">
-                  <MapPin className="h-5 w-5" />
+            <div className="p-4 md:p-6 lg:p-7 space-y-4 md:space-y-5">
+              <div className="flex items-start gap-2 md:gap-3">
+                <span className="grid h-9 md:h-11 w-9 md:w-11 place-items-center rounded-lg md:rounded-xl bg-secondary text-primary shrink-0">
+                  <MapPin className="h-4 md:h-5 w-4 md:w-5" />
                 </span>
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Headquartered in</p>
-                  <p className="font-display text-lg font-semibold text-foreground">{addressFull}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                <div className="min-w-0">
+                  <p className="text-[11px] md:text-xs uppercase tracking-wider text-muted-foreground">Headquartered in</p>
+                  <p className="font-display text-sm md:text-lg font-semibold text-foreground break-words">{addressFull}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
                     Servicing greater Lowell, the Merrimack Valley, and parts of Southern New Hampshire.
                   </p>
                 </div>
@@ -80,63 +81,82 @@ export const AreasWeServe = ({ compact = false }: { compact?: boolean }) => {
 
               <form
                 onSubmit={handleZip}
-                className="flex flex-col sm:flex-row gap-3 bg-secondary/60 p-3 rounded-2xl border border-border"
+                className="flex flex-col sm:flex-row gap-2 md:gap-3 bg-secondary/60 p-2 md:p-3 rounded-lg md:rounded-2xl border border-border"
               >
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     required
                     pattern="[0-9]{5}"
                     inputMode="numeric"
-                    placeholder="Enter your ZIP code"
+                    placeholder="Enter ZIP code"
                     value={zip}
                     onChange={(e) => setZip(e.target.value)}
-                    className="h-12 pl-10 rounded-xl bg-surface"
+                    className="h-10 md:h-12 pl-8 md:pl-10 rounded-lg md:rounded-xl bg-surface text-sm"
                   />
                 </div>
-                <Button type="submit" variant="hero" size="lg" className="h-12 rounded-xl whitespace-nowrap">
-                  Check Availability <ArrowRight className="h-4 w-4" />
+                <Button type="submit" variant="hero" size="sm" className="h-10 md:h-12 rounded-lg md:rounded-xl whitespace-nowrap text-sm md:text-base">
+                  Check <span className="hidden sm:inline">Availability</span> <ArrowRight className="h-3 md:h-4 w-3 md:w-4 ml-1 md:ml-2" />
                 </Button>
               </form>
             </div>
           </div>
 
           {/* Cities list */}
-          <div className="reveal space-y-5">
+          <div className="reveal space-y-4 md:space-y-5">
             {/* Filter chips */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 md:gap-2">
               <button
                 onClick={() => setFilter("all")}
                 className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium border transition-smooth",
+                  "px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium border transition-smooth",
                   filter === "all"
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-surface text-foreground border-border hover:border-primary/40"
                 )}
               >
-                All Areas
+                All
               </button>
               {ZONES.map((z) => (
                 <button
                   key={z.key}
                   onClick={() => setFilter(z.key)}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium border transition-smooth",
+                    "px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium border transition-smooth",
                     filter === z.key
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-surface text-foreground border-border hover:border-primary/40"
                   )}
                 >
-                  {z.label}
+                  <span className="hidden md:inline">{z.label}</span>
+                  <span className="md:hidden">{z.label.split(' ')[0]}</span>
                 </button>
               ))}
             </div>
 
-            <div className="bg-surface rounded-3xl shadow-card border border-border p-6 md:p-7">
+            <div className="bg-surface rounded-2xl md:rounded-3xl shadow-card border border-border p-4 md:p-6 lg:p-7">
               {loading ? (
-                <div className="py-10 text-center text-muted-foreground text-sm">Loading service areas…</div>
+                <div className="py-8 md:py-10 text-center space-y-2">
+                  <div className="inline-block animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                  <p className="text-muted-foreground text-xs md:text-sm">Loading areas…</p>
+                </div>
+              ) : error ? (
+                <div className="py-8 md:py-10 text-center">
+                  <p className="text-xs md:text-sm text-muted-foreground mb-2">Unable to load service areas</p>
+                  <p className="text-xs text-muted-foreground mb-4">Please contact us directly</p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/contact">Contact Us</Link>
+                  </Button>
+                </div>
+              ) : areas.length === 0 ? (
+                <div className="py-8 md:py-10 text-center">
+                  <p className="text-xs md:text-sm text-muted-foreground mb-4">Service areas not configured</p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/contact">Request a Quote</Link>
+                  </Button>
+                </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-5 md:space-y-6">
                   {(filter === "all" || filter === "regular") && grouped.regular.length > 0 && (
                     <ZoneGroup title="Regular Service Area" items={grouped.regular} colorClass={ZONES[0].color} />
                   )}
@@ -182,12 +202,22 @@ const ZoneGroup = ({
     </div>
     <div className="flex flex-wrap gap-2">
       {items.map((c) => (
-        <span
-          key={c.id}
-          className="text-sm px-3 py-1.5 rounded-lg bg-secondary/70 border border-border text-foreground"
-        >
-          {c.city}, {c.state}
-        </span>
+        getHouseCleaningCityPath(c.city) ? (
+          <Link
+            key={c.id}
+            to={getHouseCleaningCityPath(c.city)!}
+            className="text-sm px-3 py-1.5 rounded-lg bg-secondary/70 border border-border text-foreground transition-colors hover:border-primary/30 hover:text-primary"
+          >
+            {c.city}, {c.state}
+          </Link>
+        ) : (
+          <span
+            key={c.id}
+            className="text-sm px-3 py-1.5 rounded-lg bg-secondary/70 border border-border text-foreground"
+          >
+            {c.city}, {c.state}
+          </span>
+        )
       ))}
     </div>
   </div>

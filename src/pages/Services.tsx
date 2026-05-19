@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { Layout } from "@/components/Layout";
+import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { COMPANY_NAME } from "@/data/nav";
+import { LOCAL_HOUSE_CLEANING_PAGES } from "@/data/localSeo";
 
 const SERVICES = [
   { to: "/house-cleaning", title: "Standard House Cleaning", desc: "Routine top-to-bottom cleaning for the home you love." },
@@ -15,6 +17,17 @@ const SERVICES = [
 
 const Services = () => (
   <Layout>
+    <Seo
+      title="Cleaning Services in Lowell, MA | House, Deep, Recurring & Commercial"
+      description="Compare house cleaning, deep cleaning, recurring cleaning, office cleaning, and commercial cleaning from Paiva Cleaners Co. across Lowell and nearby cities."
+      canonicalPath="/services"
+      keywords={[
+        "cleaning services lowell ma",
+        "deep cleaning lowell",
+        "commercial cleaning lowell ma",
+        "recurring cleaning chelmsford ma",
+      ]}
+    />
     <section className="bg-gradient-to-b from-secondary/60 to-background">
       <div className="container py-16 md:py-24 text-center max-w-3xl mx-auto space-y-5">
         <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] font-semibold text-primary px-3 py-1 rounded-full bg-surface shadow-soft">
@@ -50,8 +63,26 @@ const Services = () => (
 
       <div className="text-center mt-12">
         <Button asChild variant="hero" size="lg">
-          <Link to="/contact">Get Estimate</Link>
+          <Link to="/contact">Book a Cleaning Today</Link>
         </Button>
+      </div>
+
+      <div className="mt-16 rounded-3xl border border-border bg-secondary/30 p-6 md:p-8">
+        <div className="max-w-2xl space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Popular City Pages</p>
+          <h2 className="font-display text-2xl font-semibold text-foreground md:text-4xl">Explore local service pages for nearby cities</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+            These pages help local visitors find the right cleaning service faster and give Google stronger city-specific relevance.
+          </p>
+        </div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {LOCAL_HOUSE_CLEANING_PAGES.map((page) => (
+            <Link key={page.path} to={page.path} className="rounded-2xl border border-border bg-surface p-5 shadow-card transition-all duration-200 hover:border-primary/30 hover:shadow-strong">
+              <h3 className="font-display text-lg font-semibold text-foreground">House Cleaning {page.city}, MA</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{page.intro}</p>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   </Layout>
