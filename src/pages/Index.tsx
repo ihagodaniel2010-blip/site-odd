@@ -24,7 +24,6 @@ import { CtaBanner } from "@/components/CtaBanner";
 import { Seo } from "@/components/Seo";
 import { SectionHeader } from "@/components/SectionHeader";
 import { AreasWeServe } from "@/components/AreasWeServe";
-import { LOCAL_HOUSE_CLEANING_PAGES } from "@/data/localSeo";
 import { usePricingRules } from "@/hooks/usePricingRules";
 import heroKitchen from "@/assets/hero-kitchen.jpg";
 import imgHouse from "@/assets/service-house.jpg";
@@ -421,28 +420,6 @@ const Home = () => {
               <Link to="/contact">Book a Cleaning Today <ArrowRight className="h-4 w-4" /></Link>
             </Button>
           </div>
-        </div>
-      </section>
-
-      <section className="container py-16 md:py-20">
-        <div className="max-w-3xl space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Local SEO Pages</p>
-          <h2 className="font-display text-3xl font-semibold text-foreground md:text-5xl">City pages designed to rank and convert</h2>
-          <p className="text-base leading-relaxed text-muted-foreground md:text-lg">
-            Browse city-specific house cleaning pages built for local intent, stronger Google relevance, and cleaner paid-ad conversion paths.
-          </p>
-        </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {LOCAL_HOUSE_CLEANING_PAGES.map((page) => (
-            <Link
-              key={page.path}
-              to={page.path}
-              className="rounded-2xl border border-border bg-surface p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-strong"
-            >
-              <h3 className="font-display text-lg font-semibold text-foreground">House Cleaning {page.city}, MA</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{page.metaDescription}</p>
-            </Link>
-          ))}
         </div>
       </section>
 
