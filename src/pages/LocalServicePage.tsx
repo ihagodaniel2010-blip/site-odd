@@ -167,7 +167,11 @@ export const LocalServicePage = ({ page }: { page: LocalHouseCleaningPage }) => 
                 src={heroImage}
                 alt={`House cleaning service in ${page.city}, MA`}
                 className="h-full w-full object-cover"
-                fetchPriority="high"
+                loading="eager"
+                decoding="async"
+                width={1400}
+                height={1050}
+                sizes="(max-width: 1024px) 100vw, 42vw"
               />
             </div>
             <div className="absolute bottom-4 left-4 max-w-[240px] rounded-2xl border border-border bg-surface/95 p-4 shadow-float backdrop-blur-sm">

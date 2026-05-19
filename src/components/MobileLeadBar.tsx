@@ -1,16 +1,26 @@
+import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Calculator, MessageCircle, Phone } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const toDigits = (value: string) => value.replace(/\D/g, "");
 
-export const MobileLeadBar = () => {
+export const MobileLeadBar = memo(() => {
   const { settings } = useSiteSettings();
   const phone = settings.phone || "(978) 319-8939";
-  const phoneHref = settings.phone_href || `tel:${phone}`;
-  const phoneDigits = toDigits(phoneHref || phone);
-  const whatsappHref =
-    settings.social_whatsapp?.trim() || `https://wa.me/${phoneDigits}?text=${encodeURIComponent("Hi, I would like a fast quote for cleaning service.")}`;
+
+  const { phoneHref, whatsappHref } = useMemo(() => {
+    const nextPhoneHref = settings.phone_href || `tel:${phone}`;
+    const phoneDigits = toDigits(nextPhoneHref || phone);
+    const nextWhatsappHref =
+      settings.social_whatsapp?.trim() ||
+      `https://wa.me/${phoneDigits}?text=${encodeURIComponent("Hi, I would like a fast quote for cleaning service.")}`;
+
+    return {
+      phoneHref: nextPhoneHref,
+      whatsappHref: nextWhatsappHref,
+    };
+  }, [phone, settings.phone_href, settings.social_whatsapp]);
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[95] border-t border-border bg-surface/95 backdrop-blur-md shadow-strong md:hidden">
@@ -41,4 +51,6 @@ export const MobileLeadBar = () => {
       </div>
     </div>
   );
-};
+});
+
+MobileLeadBar.displayName = "MobileLeadBar";

@@ -52,7 +52,16 @@ export const ServicePageTemplate = (p: ServicePageProps) => (
         </div>
         <div className="reveal-right relative">
           <div className="relative rounded-2xl overflow-hidden shadow-strong aspect-[4/3]">
-            <img src={p.heroImage} alt={p.title} className="w-full h-full object-cover" fetchPriority="high" />
+            <img
+              src={p.heroImage}
+              alt={p.title}
+              className="w-full h-full object-cover"
+              loading="eager"
+              decoding="async"
+              width={1400}
+              height={1050}
+              sizes="(max-width: 1024px) 100vw, 48vw"
+            />
           </div>
           <div className="absolute -bottom-6 -left-4 md:-left-8 bg-surface rounded-2xl shadow-float p-5 max-w-[240px] animate-float">
             <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Trusted</p>

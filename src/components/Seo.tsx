@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 
 type SchemaInput = Record<string, unknown> | Array<Record<string, unknown>>;
@@ -43,6 +43,8 @@ export const Seo = ({
   schema,
 }: SeoProps) => {
   const location = useLocation();
+  const keywordsContent = useMemo(() => (keywords?.length ? keywords.join(", ") : ""), [keywords]);
+  const schemaContent = useMemo(() => (schema ? JSON.stringify(schema) : ""), [schema]);
 
   useEffect(() => {
     const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
@@ -64,8 +66,8 @@ export const Seo = ({
     ensureMeta('meta[property="og:url"]', { property: "og:url" }).content = canonicalUrl;
     ensureMeta('meta[property="og:site_name"]', { property: "og:site_name" }).content = "Paiva Cleaners Co.";
 
-    if (keywords?.length) {
-      ensureMeta('meta[name="keywords"]', { name: "keywords" }).content = keywords.join(", ");
+    if (keywordsContent) {
+      ensureMeta('meta[name="keywords"]', { name: "keywords" }).content = keywordsContent;
     }
 
     if (imageUrl) {
@@ -75,7 +77,7 @@ export const Seo = ({
 
     ensureLink('link[rel="canonical"]', { rel: "canonical" }).href = canonicalUrl;
 
-    if (schema) {
+    if (schemaContent) {
       let script = document.head.querySelector<HTMLScriptElement>('script[data-seo-schema="true"]');
       if (!script) {
         script = document.createElement("script");
@@ -83,9 +85,9 @@ export const Seo = ({
         script.dataset.seoSchema = "true";
         document.head.appendChild(script);
       }
-      script.textContent = JSON.stringify(schema);
+      script.textContent = schemaContent;
     }
-  }, [canonicalPath, description, image, keywords, location.pathname, schema, title, type]);
+  }, [canonicalPath, description, image, keywordsContent, location.pathname, schemaContent, title, type]);
 
   return null;
 };

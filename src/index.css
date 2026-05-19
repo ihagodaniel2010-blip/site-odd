@@ -131,3 +131,27 @@
   }
   .reveal-right.is-visible { opacity: 1; transform: translateX(0); }
 }
+
+@media (hover: none) {
+  .hover-lift:hover {
+    transform: none;
+    box-shadow: var(--shadow-card);
+  }
+}
+
+@media (prefers-reduced-motion: reduce), (max-width: 768px) {
+  .animate-float {
+    animation: none !important;
+  }
+
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    transition-duration: 0.35s;
+  }
+
+  .reveal-left,
+  .reveal-right {
+    transform: translateY(16px);
+  }
+}

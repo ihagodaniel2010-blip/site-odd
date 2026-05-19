@@ -71,6 +71,23 @@ const testimonials = [
   { quote: "I booked a move-out clean and got my full deposit back. Fast booking, clear pricing, no surprises.", name: "Priya S.", city: "Cedar Park, TX" },
 ];
 
+const HOME_SEO_KEYWORDS = [
+  "house cleaning lowell ma",
+  "cleaners chelmsford ma",
+  "cleaning service dracut ma",
+  "book house cleaning lowell",
+  "instant cleaning quote",
+];
+
+const HOME_SEO_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: "Paiva Cleaners Co.",
+  description: "House and commercial cleaning in Lowell, MA and nearby communities.",
+  telephone: "(978) 319-8939",
+  areaServed: ["Lowell", "Chelmsford", "Dracut", "Tewksbury", "Billerica", "Westford"],
+};
+
 const Home = () => {
   const navigate = useNavigate();
   const { pricing } = usePricingRules();
@@ -99,21 +116,8 @@ const Home = () => {
         title="House Cleaning Lowell MA | Instant Quotes, Local Trust, Fast Booking"
         description="Paiva Cleaners Co. helps Lowell-area homeowners book trusted house cleaning fast. See pricing in 60 seconds, call now, or request recurring cleaning online."
         canonicalPath="/"
-        keywords={[
-          "house cleaning lowell ma",
-          "cleaners chelmsford ma",
-          "cleaning service dracut ma",
-          "book house cleaning lowell",
-          "instant cleaning quote",
-        ]}
-        schema={{
-          "@context": "https://schema.org",
-          "@type": "LocalBusiness",
-          name: "Paiva Cleaners Co.",
-          description: "House and commercial cleaning in Lowell, MA and nearby communities.",
-          telephone: "(978) 319-8939",
-          areaServed: ["Lowell", "Chelmsford", "Dracut", "Tewksbury", "Billerica", "Westford"],
-        }}
+        keywords={HOME_SEO_KEYWORDS}
+        schema={HOME_SEO_SCHEMA}
       />
       {/* HERO */}
       <section className="relative overflow-hidden">
@@ -155,7 +159,16 @@ const Home = () => {
 
           <div className="relative animate-fade-left">
             <div className="relative rounded-3xl overflow-hidden shadow-strong aspect-[4/5] sm:aspect-[5/6]">
-              <img src={heroKitchen} alt="Bright clean modern kitchen" className="w-full h-full object-cover" />
+              <img
+                src={heroKitchen}
+                alt="Bright clean modern kitchen"
+                className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
+                width={1200}
+                height={1500}
+                sizes="(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 42vw"
+              />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 via-transparent to-transparent" />
             </div>
 
@@ -299,6 +312,10 @@ const Home = () => {
                     src={s.img}
                     alt={s.title}
                     loading="lazy"
+                    decoding="async"
+                    width={1024}
+                    height={768}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
@@ -364,7 +381,16 @@ const Home = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="reveal-left order-2 lg:order-1 relative">
             <div className="rounded-3xl overflow-hidden shadow-strong aspect-[4/5]">
-              <img src={imgPremium} alt="Bright clean bedroom" loading="lazy" className="w-full h-full object-cover" />
+              <img
+                src={imgPremium}
+                alt="Bright clean bedroom"
+                loading="lazy"
+                decoding="async"
+                width={1200}
+                height={1500}
+                sizes="(max-width: 1024px) 100vw, 48vw"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="absolute -top-6 -right-4 bg-surface rounded-2xl shadow-float p-5 animate-float">
               <p className="font-display text-3xl font-semibold text-primary">98%</p>

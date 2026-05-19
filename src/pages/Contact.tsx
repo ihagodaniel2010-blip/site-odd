@@ -44,6 +44,13 @@ const Field = ({
   </div>
 );
 
+const CONTACT_SEO_KEYWORDS = [
+  "cleaning quote lowell ma",
+  "book house cleaning lowell",
+  "cleaning estimate chelmsford ma",
+  "maid service quote dracut ma",
+];
+
 const Contact = () => {
   const [params] = useSearchParams();
   const { areas } = useAreas();
@@ -220,12 +227,7 @@ const Contact = () => {
         title="Get a Cleaning Quote in 60 Seconds | Paiva Cleaners Co."
         description="Request your instant cleaning quote for Lowell, Chelmsford, Dracut, Tewksbury, Billerica, and Westford. Call, SMS, or book online today."
         canonicalPath="/contact"
-        keywords={[
-          "cleaning quote lowell ma",
-          "book house cleaning lowell",
-          "cleaning estimate chelmsford ma",
-          "maid service quote dracut ma",
-        ]}
+        keywords={CONTACT_SEO_KEYWORDS}
       />
       <section className="relative bg-gradient-to-b from-secondary/60 to-background">
         <div className="container py-14 md:py-20 text-center max-w-3xl mx-auto space-y-5 reveal">

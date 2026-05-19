@@ -3,38 +3,60 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import HouseCleaning from "./pages/HouseCleaning.tsx";
-import CommercialCleaning from "./pages/CommercialCleaning.tsx";
-import DeepCleaning from "./pages/DeepCleaning.tsx";
-import MoveInOut from "./pages/MoveInOut.tsx";
-import RecurringCleaning from "./pages/RecurringCleaning.tsx";
-import OfficeCleaning from "./pages/OfficeCleaning.tsx";
-import About from "./pages/About.tsx";
-import Contact from "./pages/Contact.tsx";
-import AreasWeServePage from "./pages/AreasWeServePage.tsx";
-import Services from "./pages/Services.tsx";
-import Portfolio from "./pages/Portfolio.tsx";
-import AdminLogin from "./pages/admin/AdminLogin.tsx";
-import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
-import AdminEstimates from "./pages/admin/AdminEstimates.tsx";
-import AdminPricing from "./pages/admin/AdminPricing.tsx";
-import AdminCustomers from "./pages/admin/AdminCustomers.tsx";
-import AdminAreas from "./pages/admin/AdminAreas.tsx";
-import AdminSettings from "./pages/admin/AdminSettings.tsx";
-import AdminCalendar from "./pages/admin/AdminCalendar.tsx";
-import AdminPortfolio from "./pages/admin/AdminPortfolio.tsx";
-import AdminServices from "./pages/admin/AdminServices.tsx";
-import AdminMedia from "./pages/admin/AdminMedia.tsx";
-import AdminMessages from "./pages/admin/AdminMessages.tsx";
-import AdminCleaners from "./pages/admin/AdminCleaners.tsx";
-import AdminReviews from "./pages/admin/AdminReviews.tsx";
+import { LOCAL_HOUSE_CLEANING_PAGES } from "./data/localSeo";
 
-const queryClient = new QueryClient();
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const HouseCleaning = lazy(() => import("./pages/HouseCleaning.tsx"));
+const CommercialCleaning = lazy(() => import("./pages/CommercialCleaning.tsx"));
+const DeepCleaning = lazy(() => import("./pages/DeepCleaning.tsx"));
+const MoveInOut = lazy(() => import("./pages/MoveInOut.tsx"));
+const RecurringCleaning = lazy(() => import("./pages/RecurringCleaning.tsx"));
+const OfficeCleaning = lazy(() => import("./pages/OfficeCleaning.tsx"));
+const About = lazy(() => import("./pages/About.tsx"));
+const Contact = lazy(() => import("./pages/Contact.tsx"));
+const AreasWeServePage = lazy(() => import("./pages/AreasWeServePage.tsx"));
+const Services = lazy(() => import("./pages/Services.tsx"));
+const Portfolio = lazy(() => import("./pages/Portfolio.tsx"));
+const LocalServicePage = lazy(async () => {
+  const mod = await import("./pages/LocalServicePage.tsx");
+  return { default: mod.LocalServicePage };
+});
+
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin.tsx"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.tsx"));
+const AdminEstimates = lazy(() => import("./pages/admin/AdminEstimates.tsx"));
+const AdminPricing = lazy(() => import("./pages/admin/AdminPricing.tsx"));
+const AdminCustomers = lazy(() => import("./pages/admin/AdminCustomers.tsx"));
+const AdminAreas = lazy(() => import("./pages/admin/AdminAreas.tsx"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings.tsx"));
+const AdminCalendar = lazy(() => import("./pages/admin/AdminCalendar.tsx"));
+const AdminPortfolio = lazy(() => import("./pages/admin/AdminPortfolio.tsx"));
+const AdminServices = lazy(() => import("./pages/admin/AdminServices.tsx"));
+const AdminMedia = lazy(() => import("./pages/admin/AdminMedia.tsx"));
+const AdminMessages = lazy(() => import("./pages/admin/AdminMessages.tsx"));
+const AdminCleaners = lazy(() => import("./pages/admin/AdminCleaners.tsx"));
+const AdminReviews = lazy(() => import("./pages/admin/AdminReviews.tsx"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      gcTime: 15 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+const RouteFallback = () => (
+  <div className="container py-16" aria-busy="true" aria-live="polite">
+    <div className="h-10 w-56 rounded-xl bg-secondary/60 animate-pulse" />
+  </div>
+);
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -49,41 +71,51 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/house-cleaning" element={<HouseCleaning />} />
-          <Route path="/commercial-cleaning" element={<CommercialCleaning />} />
-          <Route path="/deep-cleaning" element={<DeepCleaning />} />
-          <Route path="/move-in-move-out" element={<MoveInOut />} />
-          <Route path="/recurring-cleaning" element={<RecurringCleaning />} />
-          <Route path="/office-cleaning" element={<OfficeCleaning />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/areas-we-serve" element={<AreasWeServePage />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/portfolio" element={<Portfolio />} />
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/house-cleaning" element={<HouseCleaning />} />
+            <Route path="/commercial-cleaning" element={<CommercialCleaning />} />
+            <Route path="/deep-cleaning" element={<DeepCleaning />} />
+            <Route path="/move-in-move-out" element={<MoveInOut />} />
+            <Route path="/recurring-cleaning" element={<RecurringCleaning />} />
+            <Route path="/office-cleaning" element={<OfficeCleaning />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/areas-we-serve" element={<AreasWeServePage />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/portfolio" element={<Portfolio />} />
 
-          {/* Admin */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/estimates" element={<AdminEstimates />} />
-          <Route path="/admin/pricing" element={<AdminPricing />} />
-          <Route path="/admin/customers" element={<AdminCustomers />} />
-          <Route path="/admin/areas" element={<AdminAreas />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          <Route path="/admin/calendar" element={<AdminCalendar />} />
-          <Route path="/admin/portfolio" element={<AdminPortfolio />} />
-          <Route path="/admin/services" element={<AdminServices />} />
-          <Route path="/admin/media" element={<AdminMedia />} />
-          <Route path="/admin/messages" element={<AdminMessages />} />
-          <Route path="/admin/cleaners" element={<AdminCleaners />} />
-          <Route path="/admin/reviews" element={<AdminReviews />} />
+            {LOCAL_HOUSE_CLEANING_PAGES.map((page) => (
+              <Route
+                key={page.path}
+                path={page.path}
+                element={<LocalServicePage page={page} />}
+              />
+            ))}
 
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            {/* Admin */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/estimates" element={<AdminEstimates />} />
+            <Route path="/admin/pricing" element={<AdminPricing />} />
+            <Route path="/admin/customers" element={<AdminCustomers />} />
+            <Route path="/admin/areas" element={<AdminAreas />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/calendar" element={<AdminCalendar />} />
+            <Route path="/admin/portfolio" element={<AdminPortfolio />} />
+            <Route path="/admin/services" element={<AdminServices />} />
+            <Route path="/admin/media" element={<AdminMedia />} />
+            <Route path="/admin/messages" element={<AdminMessages />} />
+            <Route path="/admin/cleaners" element={<AdminCleaners />} />
+            <Route path="/admin/reviews" element={<AdminReviews />} />
+
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
