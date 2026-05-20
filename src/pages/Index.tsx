@@ -27,6 +27,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { AreasWeServe } from "@/components/AreasWeServe";
 import { usePortfolioItems } from "@/hooks/usePortfolioItems";
 import { usePricingRules } from "@/hooks/usePricingRules";
+import { useReviews } from "@/hooks/useReviews";
 import heroKitchen from "@/assets/hero-kitchen.jpg";
 import imgHouse from "@/assets/service-house.jpg";
 import imgDeep from "@/assets/service-deep.jpg";
@@ -93,6 +94,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { pricing } = usePricingRules();
   const { items: featuredPortfolioItems } = usePortfolioItems({ featuredOnly: true });
+  const { reviews: publicReviews } = useReviews({ featuredOnly: true });
   const [quickQuote, setQuickQuote] = useState({
     zip: "",
     service: "standard",
@@ -111,6 +113,15 @@ const Home = () => {
 
     navigate(`/contact?${query.toString()}`);
   };
+
+  const testimonialItems =
+    publicReviews.length > 0
+      ? publicReviews.slice(0, 3).map((review) => ({
+          quote: review.review_text,
+          name: review.customer_name,
+          city: "Lowell, MA",
+        }))
+      : testimonials;
 
   return (
     <Layout>
@@ -435,7 +446,7 @@ const Home = () => {
             subtitle="See why over 1,200+ customers choose Paiva Cleaners for their homes and businesses."
           />
           <div className="grid md:grid-cols-3 gap-5 md:gap-6">
-            {testimonials.map((t) => (
+            {testimonialItems.map((t) => (
               <div key={t.name} className="reveal group bg-surface rounded-xl md:rounded-2xl p-6 md:p-7 shadow-card hover:shadow-strong hover:border-primary/20 border border-border/60 transition-all duration-300 flex flex-col">
                 <div className="flex gap-0.5 mb-3 md:mb-4">
                   {[...Array(5)].map((_, i) => (

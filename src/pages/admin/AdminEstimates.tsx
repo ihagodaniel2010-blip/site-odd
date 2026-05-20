@@ -26,7 +26,7 @@ import { isMissingRelationError } from "@/lib/supabaseErrors";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
-type EstimateStatus = Database["public"]["Enums"]["estimate_status"];
+type EstimateStatus = string;
 
 type EstimateBreakdown = {
   base: number;
@@ -125,8 +125,10 @@ const logMessage = async (
   const subject = `Your ${COMPANY_NAME} estimate`;
   const { error } = await supabase.from("messages").insert({
     estimate_request_id: estimate.id,
+    full_name: estimate.full_name,
     client_name: estimate.full_name,
     email: estimate.email,
+    phone: estimate.phone,
     subject,
     message,
     channel,
@@ -152,7 +154,7 @@ const AdminEstimates = () => {
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("estimate_requests")
+      .from("service_requests")
       .select("*")
       .order("created_at", { ascending: false });
     if (error) {
@@ -188,7 +190,7 @@ const AdminEstimates = () => {
 
   const updateStatus = async (id: string, status: EstimateStatus) => {
     const { error } = await supabase
-      .from("estimate_requests")
+      .from("service_requests")
       .update({ status })
       .eq("id", id);
     if (error) {
@@ -202,7 +204,7 @@ const AdminEstimates = () => {
 
   const updateContactedVia = async (id: string, contacted_via: string) => {
     const { error } = await supabase
-      .from("estimate_requests")
+      .from("service_requests")
       .update({ contacted_via })
       .eq("id", id);
     if (error) {
@@ -216,7 +218,7 @@ const AdminEstimates = () => {
 
   const updateNotes = async (id: string, notes: string) => {
     const { error } = await supabase
-      .from("estimate_requests")
+      .from("service_requests")
       .update({ admin_notes: notes })
       .eq("id", id);
     if (error) {
@@ -228,7 +230,7 @@ const AdminEstimates = () => {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this estimate request? This cannot be undone.")) return;
-    const { error } = await supabase.from("estimate_requests").delete().eq("id", id);
+    const { error } = await supabase.from("service_requests").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
       return;
@@ -347,7 +349,7 @@ const AdminEstimates = () => {
               <div className="p-10 text-center space-y-2">
                 <p className="font-semibold text-foreground">Estimate Requests module pending database migration</p>
                 <p className="text-sm text-muted-foreground">
-                  Apply Supabase migrations to create the public.estimate_requests table.
+                  Apply Supabase migrations to create the public.service_requests table.
                 </p>
               </div>
             ) : filtered.length === 0 ? (

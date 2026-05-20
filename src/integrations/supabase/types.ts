@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          auth_user_id: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          auth_user_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          auth_user_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       areas_served: {
         Row: {
           active: boolean
@@ -22,6 +52,8 @@ export type Database = {
           display_order: number
           id: string
           state: string
+          updated_at: string
+          zip_codes: string[]
           zone: string
         }
         Insert: {
@@ -31,6 +63,8 @@ export type Database = {
           display_order?: number
           id?: string
           state: string
+          updated_at?: string
+          zip_codes?: string[]
           zone: string
         }
         Update: {
@@ -40,7 +74,87 @@ export type Database = {
           display_order?: number
           id?: string
           state?: string
+          updated_at?: string
+          zip_codes?: string[]
           zone?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          cleaner_id: string | null
+          created_at: string
+          customer_id: string | null
+          id: string
+          notes: string | null
+          price: number | null
+          scheduled_date: string | null
+          scheduled_time: string | null
+          service_request_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cleaner_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          price?: number | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          service_request_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cleaner_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          price?: number | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          service_request_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cleaners: {
+        Row: {
+          availability: Json | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          availability?: Json | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          availability?: Json | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -207,11 +321,14 @@ export type Database = {
           created_at: string
           email: string
           estimate_request_id: string | null
+          full_name: string | null
           id: string
           message: string
+          phone: string | null
           sent_at: string | null
           status: string
           subject: string | null
+          updated_at: string
         }
         Insert: {
           channel?: string
@@ -219,11 +336,14 @@ export type Database = {
           created_at?: string
           email: string
           estimate_request_id?: string | null
+          full_name?: string | null
           id?: string
           message: string
+          phone?: string | null
           sent_at?: string | null
           status?: string
           subject?: string | null
+          updated_at?: string
         }
         Update: {
           channel?: string
@@ -231,11 +351,14 @@ export type Database = {
           created_at?: string
           email?: string
           estimate_request_id?: string | null
+          full_name?: string | null
           id?: string
           message?: string
+          phone?: string | null
           sent_at?: string | null
           status?: string
           subject?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -343,6 +466,135 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          anonymize_name: boolean
+          created_at: string
+          customer_name: string | null
+          id: string
+          is_featured: boolean
+          is_public: boolean
+          rating: number | null
+          review_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          anonymize_name?: boolean
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          is_featured?: boolean
+          is_public?: boolean
+          rating?: number | null
+          review_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anonymize_name?: boolean
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          is_featured?: boolean
+          is_public?: boolean
+          rating?: number | null
+          review_text?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      service_requests: {
+        Row: {
+          address: string | null
+          admin_notes: string | null
+          bathrooms: number | null
+          bedrooms: number | null
+          calculated_estimate: number | null
+          city: string | null
+          contacted_via: string | null
+          created_at: string
+          customer_id: string | null
+          email: string | null
+          estimate_breakdown: Json | null
+          estimated_price_max: number | null
+          estimated_price_min: number | null
+          extras: Json | null
+          frequency: string | null
+          full_name: string | null
+          home_size: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          preferred_date: string | null
+          preferred_time: string | null
+          property_type: string | null
+          service_type: string | null
+          service_zone: string | null
+          status: string
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          admin_notes?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          calculated_estimate?: number | null
+          city?: string | null
+          contacted_via?: string | null
+          created_at?: string
+          customer_id?: string | null
+          email?: string | null
+          estimate_breakdown?: Json | null
+          estimated_price_max?: number | null
+          estimated_price_min?: number | null
+          extras?: Json | null
+          frequency?: string | null
+          full_name?: string | null
+          home_size?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          property_type?: string | null
+          service_type?: string | null
+          service_zone?: string | null
+          status?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          admin_notes?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          calculated_estimate?: number | null
+          city?: string | null
+          contacted_via?: string | null
+          created_at?: string
+          customer_id?: string | null
+          email?: string | null
+          estimate_breakdown?: Json | null
+          estimated_price_max?: number | null
+          estimated_price_min?: number | null
+          extras?: Json | null
+          frequency?: string | null
+          full_name?: string | null
+          home_size?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          property_type?: string | null
+          service_type?: string | null
+          service_zone?: string | null
+          status?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           active: boolean
@@ -384,32 +636,35 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          created_at: string
           category: string
           id: string
           label: string
           setting_key: string
           setting_type: string
-          setting_value: string | null
+          setting_value: Json | null
           sort_order: number
           updated_at: string
         }
         Insert: {
+          created_at?: string
           category?: string
           id?: string
           label: string
           setting_key: string
           setting_type?: string
-          setting_value?: string | null
+          setting_value?: Json | null
           sort_order?: number
           updated_at?: string
         }
         Update: {
+          created_at?: string
           category?: string
           id?: string
           label?: string
           setting_key?: string
           setting_type?: string
-          setting_value?: string | null
+          setting_value?: Json | null
           sort_order?: number
           updated_at?: string
         }

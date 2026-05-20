@@ -42,7 +42,7 @@ type Customer = {
 };
 
 type EstimateHistoryItem = Pick<
-  Database["public"]["Tables"]["estimate_requests"]["Row"],
+  Database["public"]["Tables"]["service_requests"]["Row"],
   "id" | "service_type" | "status" | "calculated_estimate" | "preferred_date" | "created_at"
 >;
 
@@ -83,7 +83,11 @@ const AdminCustomers = () => {
       }
       toast.error(error.message);
     }
-    setRows((data as Customer[]) ?? []);
+    const normalized = ((data as (Customer & { full_name?: string | null })[]) ?? []).map((row) => ({
+      ...row,
+      name: row.name || row.full_name || "Unnamed customer",
+    }));
+    setRows(normalized);
     setLoading(false);
   };
 
@@ -118,6 +122,7 @@ const AdminCustomers = () => {
       return;
     }
     const payload: Database["public"]["Tables"]["customers"]["Insert"] = {
+      full_name: editing.name.trim(),
       name: editing.name.trim(),
       phone: editing.phone || null,
       email: editing.email || null,
@@ -156,7 +161,7 @@ const AdminCustomers = () => {
   const openHistory = async (c: Customer) => {
     setHistoryOf(c);
     const { data, error } = await supabase
-      .from("estimate_requests")
+      .from("service_requests")
       .select("id,service_type,status,calculated_estimate,preferred_date,created_at")
       .or(
         `email.eq.${c.email ?? "__none__"},phone.eq.${c.phone ?? "__none__"}`

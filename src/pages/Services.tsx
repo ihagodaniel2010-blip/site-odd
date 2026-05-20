@@ -5,6 +5,7 @@ import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { COMPANY_NAME } from "@/data/nav";
 import { LOCAL_HOUSE_CLEANING_PAGES } from "@/data/localSeo";
+import { useServices } from "@/hooks/useServices";
 
 const SERVICES = [
   { to: "/house-cleaning", title: "Standard House Cleaning", desc: "Routine top-to-bottom cleaning for the home you love." },
@@ -15,7 +16,19 @@ const SERVICES = [
   { to: "/commercial-cleaning", title: "Commercial Cleaning", desc: "Clinics, retail and post-construction — built for higher standards." },
 ];
 
-const Services = () => (
+const Services = () => {
+  const { services: dbServices } = useServices();
+
+  const serviceCards =
+    dbServices.length > 0
+      ? dbServices.map((service) => ({
+          to: `/${service.slug}`,
+          title: service.name,
+          desc: service.description ?? "Professional cleaning tailored to your space.",
+        }))
+      : SERVICES;
+
+  return (
   <Layout>
     <Seo
       title="Cleaning Services in Lowell, MA | House, Deep, Recurring & Commercial"
@@ -44,7 +57,7 @@ const Services = () => (
 
     <section className="container py-12 md:py-16">
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {SERVICES.map((s) => (
+        {serviceCards.map((s) => (
           <Link
             key={s.to}
             to={s.to}
@@ -86,6 +99,7 @@ const Services = () => (
       </div>
     </section>
   </Layout>
-);
+  );
+};
 
 export default Services;

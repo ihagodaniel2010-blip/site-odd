@@ -180,30 +180,38 @@ const Contact = () => {
 
     const fallbackEmail = `${form.phone.replace(/\D/g, "") || "no-phone"}@no-email.local`;
 
+    const bedroomsNumeric = Number.parseInt(String(effectiveBedrooms).replace(/[^0-9]/g, ""), 10);
+    const bathroomsNumeric = Number.parseFloat(String(effectiveBathrooms).replace(/[^0-9.]/g, ""));
+
     const payload = {
       full_name: form.full_name,
       phone: form.phone,
       email: form.email.trim() || fallbackEmail,
-      address: "Not provided",
       zip_code: form.zip_code,
       city: form.city || null,
       service_type: form.service_type,
-      property_type: form.property_type || null,
-      bedrooms: effectiveBedrooms,
-      bathrooms: effectiveBathrooms,
+      home_size: form.home_size,
+      bedrooms: Number.isFinite(bedroomsNumeric) ? bedroomsNumeric : null,
+      bathrooms: Number.isFinite(bathroomsNumeric) ? bathroomsNumeric : null,
       frequency: form.frequency || null,
       preferred_date: form.preferred_date || null,
       preferred_time: form.preferred_time || null,
+      extras: form.extras as Json,
+      estimated_price_min: estimateRange?.min ?? null,
+      estimated_price_max: estimateRange?.max ?? null,
       notes: cleanedNotes || null,
+      address: "Not provided",
+      property_type: form.property_type || null,
       calculated_estimate:
         estimateRange && !breakdown?.manualReview
           ? Math.round((estimateRange.min + estimateRange.max) / 2)
           : null,
       estimate_breakdown: estimatePayload as Json,
       service_zone: zone,
-    } satisfies Database["public"]["Tables"]["estimate_requests"]["Insert"];
+      status: "new_request",
+    } satisfies Database["public"]["Tables"]["service_requests"]["Insert"];
 
-    const { error } = await supabase.from("estimate_requests").insert(payload);
+    const { error } = await supabase.from("service_requests").insert(payload);
     setSubmitting(false);
 
     if (error) {

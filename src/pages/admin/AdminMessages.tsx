@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 type MessageRow = {
   id: string;
+  full_name: string | null;
   client_name: string;
   email: string;
   subject: string | null;
@@ -107,7 +108,7 @@ const AdminMessages = () => {
                   <tbody className="divide-y divide-border">
                     {rows.map((r) => (
                       <tr key={r.id} className="hover:bg-secondary/30">
-                        <td className="px-4 py-3 font-medium text-foreground">{r.client_name}</td>
+                        <td className="px-4 py-3 font-medium text-foreground">{r.full_name || r.client_name}</td>
                         <td className="px-4 py-3 text-muted-foreground">{r.email}</td>
                         <td className="px-4 py-3 text-muted-foreground">{r.subject || "-"}</td>
                         <td className="px-4 py-3 text-muted-foreground max-w-[380px]">

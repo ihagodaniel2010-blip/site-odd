@@ -90,7 +90,7 @@ const AdminPricing = () => {
     const updates = rules.map((r) =>
       supabase
         .from("pricing_rules")
-        .update({ value: Number(r.value), active: r.active, label: r.label })
+        .update({ value: Number(r.value), active: r.active, is_active: r.active, label: r.label })
         .eq("id", r.id)
     );
     const results = await Promise.all(updates);
@@ -111,7 +111,7 @@ const AdminPricing = () => {
     const updates = DEFAULT_PRICING_SEED.map((seed) =>
       supabase
         .from("pricing_rules")
-        .update({ value: seed.value, active: true, label: seed.label, value_type: seed.value_type })
+        .update({ value: seed.value, active: true, is_active: true, label: seed.label, value_type: seed.value_type })
         .eq("category", seed.category)
         .eq("name", seed.name)
     );

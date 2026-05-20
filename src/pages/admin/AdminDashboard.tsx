@@ -52,7 +52,7 @@ const Dashboard = () => {
         const timeoutId = setTimeout(() => controller.abort(), 10000);
 
         const { data, error: queryError } = await supabase
-          .from("estimate_requests")
+          .from("service_requests")
           .select("id,full_name,city,service_type,calculated_estimate,status,created_at")
           .order("created_at", { ascending: false })
           .limit(50);
@@ -88,13 +88,13 @@ const Dashboard = () => {
   }, []);
 
   const counts = {
-    new: rows.filter((r) => r.status === "new_request").length,
+    new: rows.filter((r) => ["new", "new_request"].includes(r.status)).length,
     scheduled: rows.filter((r) => r.status === "scheduled").length,
     completed: rows.filter((r) => r.status === "completed").length,
     revenue: rows
       .filter((r) => r.status === "completed")
       .reduce((s, r) => s + Number(r.calculated_estimate ?? 0), 0),
-    pending: rows.filter((r) => ["new_request", "contacted", "estimate_sent"].includes(r.status)).length,
+    pending: rows.filter((r) => ["new", "new_request", "contacted", "estimate_sent"].includes(r.status)).length,
   };
 
   const cards = [

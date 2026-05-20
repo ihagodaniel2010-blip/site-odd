@@ -1,11 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useCallback } from "react";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
+import type { Json } from "@/integrations/supabase/types";
 
 export type SiteSetting = {
   id: string;
   setting_key: string;
-  setting_value: string | null;
+  setting_value: Json | null;
   setting_type: string;
   category: string;
   label: string;
@@ -14,6 +15,17 @@ export type SiteSetting = {
 
 export type SettingsMap = Record<string, string>;
 type SiteSettingValueRow = Pick<SiteSetting, "setting_key" | "setting_value">;
+
+const settingValueToString = (value: Json | null | undefined) => {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return null;
+  }
+};
 
 const DEFAULTS: SettingsMap = {
   company_name: "Paiva Cleaners Co.",
@@ -131,8 +143,9 @@ const loadOnce = async (force = false): Promise<SettingsMap> => {
 
       const map: SettingsMap = { ...DEFAULTS };
       ((data ?? []) as SiteSettingValueRow[]).forEach((r) => {
-        if (r.setting_value !== null && r.setting_value !== undefined) {
-          map[r.setting_key] = r.setting_value;
+        const nextValue = settingValueToString(r.setting_value);
+        if (nextValue !== null) {
+          map[r.setting_key] = nextValue;
         }
       });
 
@@ -230,7 +243,7 @@ export const useAdminSiteSettings = () => {
     try {
       await supabase
         .from("site_settings")
-        .update({ setting_value: value })
+        .update({ setting_value: value as Json })
         .eq("setting_key", key);
       await loadOnce();
     } catch (error) {
