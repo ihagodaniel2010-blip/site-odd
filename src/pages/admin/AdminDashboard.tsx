@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, CalendarCheck, CheckCircle2, ClipboardList, DollarSign, Inbox } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarCheck,
+  ClipboardList,
+  DollarSign,
+  Inbox,
+  UserCircle2,
+  Users,
+} from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { supabase } from "@/integrations/supabase/client";
 import { formatUSD } from "@/lib/pricing";
 import { isMissingRelationError } from "@/lib/supabaseErrors";
 
-type EstimateRow = {
+type RequestRow = {
   id: string;
   full_name: string;
   city: string | null;
@@ -15,6 +23,21 @@ type EstimateRow = {
   calculated_estimate: number | null;
   status: string;
   created_at: string;
+};
+
+type BookingRow = {
+  id: string;
+  service_request_id: string | null;
+  cleaner_id: string | null;
+  scheduled_date: string;
+  scheduled_time: string | null;
+  price: number | null;
+  status: string;
+};
+
+type NamedEntity = {
+  id: string;
+  full_name: string;
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -36,7 +59,12 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const Dashboard = () => {
-  const [rows, setRows] = useState<EstimateRow[]>([]);
+  const [requestRows, setRequestRows] = useState<RequestRow[]>([]);
+  const [bookingRows, setBookingRows] = useState<BookingRow[]>([]);
+  const [requestLookup, setRequestLookup] = useState<Record<string, string>>({});
+  const [cleanerLookup, setCleanerLookup] = useState<Record<string, string>>({});
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [activeCleaners, setActiveCleaners] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [schemaMissing, setSchemaMissing] = useState(false);
@@ -47,39 +75,82 @@ const Dashboard = () => {
         setLoading(true);
         setError(null);
         
-        // Add timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const [
+          requestsRes,
+          bookingsRes,
+          customersRes,
+          cleanersRes,
+          requestsForLookupRes,
+          cleanersForLookupRes,
+        ] = await Promise.all([
+          supabase
+            .from("service_requests")
+            .select("id,full_name,city,service_type,calculated_estimate,status,created_at")
+            .order("created_at", { ascending: false })
+            .limit(60),
+          supabase
+            .from("bookings")
+            .select("id,service_request_id,cleaner_id,scheduled_date,scheduled_time,price,status")
+            .order("scheduled_date", { ascending: true })
+            .limit(100),
+          supabase.from("customers").select("id", { count: "exact", head: true }),
+          supabase.from("cleaners").select("id, status"),
+          supabase.from("service_requests").select("id,full_name").limit(200),
+          supabase.from("cleaners").select("id,full_name").limit(200),
+        ]);
 
-        const { data, error: queryError } = await supabase
-          .from("service_requests")
-          .select("id,full_name,city,service_type,calculated_estimate,status,created_at")
-          .order("created_at", { ascending: false })
-          .limit(50);
+        const criticalError =
+          requestsRes.error || bookingsRes.error || customersRes.error || cleanersRes.error;
 
-        clearTimeout(timeoutId);
-
-        if (queryError) {
-          if (isMissingRelationError(queryError)) {
+        if (criticalError) {
+          if (isMissingRelationError(criticalError)) {
             setSchemaMissing(true);
-            setRows([]);
+            setRequestRows([]);
+            setBookingRows([]);
+            setTotalCustomers(0);
+            setActiveCleaners(0);
           } else {
-            console.warn("[Dashboard] Query error:", queryError.message);
-            setError(queryError.message);
-            setRows([]);
+            console.warn("[Dashboard] Query error:", criticalError.message);
+            setError(criticalError.message);
+            setRequestRows([]);
+            setBookingRows([]);
           }
           setLoading(false);
           return;
         }
-        
-        setRows((data as EstimateRow[]) ?? []);
+
+        const requestsData = (requestsRes.data as RequestRow[]) ?? [];
+        const bookingsData = (bookingsRes.data as BookingRow[]) ?? [];
+
+        setRequestRows(requestsData);
+        setBookingRows(bookingsData);
+        setTotalCustomers(customersRes.count ?? 0);
+        setActiveCleaners(
+          ((cleanersRes.data as Array<{ id: string; status: string | null }>) ?? []).filter(
+            (c) => (c.status ?? "").toLowerCase() === "active"
+          ).length
+        );
+
+        const requestMap: Record<string, string> = {};
+        ((requestsForLookupRes.data as NamedEntity[]) ?? []).forEach((r) => {
+          requestMap[r.id] = r.full_name;
+        });
+
+        const cleanerMap: Record<string, string> = {};
+        ((cleanersForLookupRes.data as NamedEntity[]) ?? []).forEach((c) => {
+          cleanerMap[c.id] = c.full_name;
+        });
+
+        setRequestLookup(requestMap);
+        setCleanerLookup(cleanerMap);
         setSchemaMissing(false);
         setError(null);
         setLoading(false);
       } catch (err) {
         console.error("[Dashboard] Error:", err);
         setError(err instanceof Error ? err.message : "Failed to load dashboard");
-        setRows([]);
+        setRequestRows([]);
+        setBookingRows([]);
         setLoading(false);
       }
     };
@@ -87,22 +158,34 @@ const Dashboard = () => {
     loadDashboard();
   }, []);
 
+  const todayISO = new Date().toISOString().slice(0, 10);
+
   const counts = {
-    new: rows.filter((r) => ["new", "new_request"].includes(r.status)).length,
-    scheduled: rows.filter((r) => r.status === "scheduled").length,
-    completed: rows.filter((r) => r.status === "completed").length,
-    revenue: rows
-      .filter((r) => r.status === "completed")
-      .reduce((s, r) => s + Number(r.calculated_estimate ?? 0), 0),
-    pending: rows.filter((r) => ["new", "new_request", "contacted", "estimate_sent"].includes(r.status)).length,
+    new: requestRows.filter((r) => ["new", "new_request"].includes(r.status)).length,
+    todayBookings: bookingRows.filter((b) => b.scheduled_date === todayISO).length,
+    estimatedRevenue: bookingRows
+      .filter((b) => ["scheduled", "in_progress", "completed"].includes(b.status))
+      .reduce((s, b) => s + Number(b.price ?? 0), 0),
   };
 
+  const upcomingBookings = bookingRows
+    .filter((b) => b.scheduled_date >= todayISO && ["scheduled", "in_progress"].includes(b.status))
+    .slice(0, 8);
+
   const cards = [
-    { label: "New Requests", value: counts.new, icon: Inbox, color: "text-info" },
-    { label: "Scheduled", value: counts.scheduled, icon: CalendarCheck, color: "text-success" },
-    { label: "Completed Jobs", value: counts.completed, icon: CheckCircle2, color: "text-success" },
-    { label: "Pending Estimates", value: counts.pending, icon: ClipboardList, color: "text-warning" },
-    { label: "Total Revenue", value: formatUSD(counts.revenue), icon: DollarSign, color: "text-primary" },
+    { label: "New Requests", value: counts.new, icon: Inbox },
+    { label: "Today's Bookings", value: counts.todayBookings, icon: CalendarCheck },
+    { label: "Total Customers", value: totalCustomers, icon: Users },
+    { label: "Estimated Revenue", value: formatUSD(counts.estimatedRevenue), icon: DollarSign },
+    { label: "Active Cleaners", value: activeCleaners, icon: UserCircle2 },
+  ];
+
+  const quickActions = [
+    { to: "/admin/requests", label: "Add Request" },
+    { to: "/admin/bookings", label: "Add Booking" },
+    { to: "/admin/customers", label: "Add Customer" },
+    { to: "/admin/pricing", label: "Edit Pricing" },
+    { to: "/admin/portfolio", label: "Manage Portfolio" },
   ];
 
   return (
@@ -113,7 +196,7 @@ const Dashboard = () => {
             <div>
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Overview</p>
               <h1 className="font-display text-2xl md:text-3xl font-semibold text-foreground mt-1">Dashboard</h1>
-              <p className="text-sm text-muted-foreground mt-2">Real-time overview of your cleaning operations</p>
+              <p className="text-sm text-muted-foreground mt-2">Daily operations snapshot with the most important metrics</p>
             </div>
             <span className="text-xs text-success font-medium bg-success/10 px-3 py-1 rounded-full border border-success/20">
               ● Live
@@ -132,20 +215,36 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <p className="font-display text-xl md:text-2xl font-bold text-foreground">{c.value}</p>
-                {i === 0 && counts.new > 0 && <p className="text-[10px] mt-2 text-warning font-medium">⚡ Needs attention</p>}
-                {i === 1 && counts.scheduled > 0 && <p className="text-[10px] mt-2 text-success font-medium">✓ On track</p>}
+                {i === 0 && counts.new > 0 && <p className="text-[10px] mt-2 text-warning font-medium">Needs attention</p>}
+                {i === 1 && counts.todayBookings > 0 && <p className="text-[10px] mt-2 text-success font-medium">Today's queue active</p>}
               </div>
             ))}
           </div>
 
-          <div className="bg-surface rounded-xl md:rounded-2xl border border-border shadow-card overflow-hidden">
+          <div className="bg-surface rounded-xl md:rounded-2xl border border-border shadow-card p-4 md:p-5">
+            <h2 className="font-display text-base md:text-lg font-bold text-foreground">Quick Actions</h2>
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.to}
+                  to={action.to}
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary/40"
+                >
+                  {action.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            <div className="bg-surface rounded-xl md:rounded-2xl border border-border shadow-card overflow-hidden">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-5 border-b border-border bg-secondary/20">
               <div>
-                <h2 className="font-display text-base md:text-lg font-bold text-foreground">Latest Requests</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">Last 8 estimate submissions</p>
+                <h2 className="font-display text-base md:text-lg font-bold text-foreground">Recent Requests</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Last 8 submissions</p>
               </div>
               <Link
-                to="/admin/estimates"
+                to="/admin/requests"
                 className="text-xs md:text-sm text-primary font-semibold hover:text-primary-strong transition-colors duration-200 inline-flex items-center gap-1 mt-2 sm:mt-0"
               >
                 View all <ArrowRight className="h-3.5 w-3.5" />
@@ -165,10 +264,10 @@ const Dashboard = () => {
               <div className="p-10 text-center space-y-2">
                 <p className="font-semibold text-foreground">Dashboard data pending database migration</p>
                 <p className="text-sm text-muted-foreground">
-                  Apply Supabase migrations to create estimate and analytics tables.
+                  Apply Supabase migrations to create request and booking tables.
                 </p>
               </div>
-            ) : rows.length === 0 ? (
+            ) : requestRows.length === 0 ? (
               <div className="p-8 md:p-12 text-center">
                 <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-secondary/50 mb-4">
                   <ClipboardList className="h-6 w-6 text-muted-foreground" />
@@ -190,7 +289,7 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {rows.slice(0, 8).map((r) => (
+                    {requestRows.slice(0, 8).map((r) => (
                       <tr key={r.id} className="hover:bg-secondary/20 transition-colors duration-150 group">
                         <td className="px-4 md:px-5 py-3 font-semibold text-foreground group-hover:text-primary transition-colors duration-150">{r.full_name}</td>
                         <td className="px-4 md:px-5 py-3 text-muted-foreground text-sm">{r.city ?? "—"}</td>
@@ -212,6 +311,50 @@ const Dashboard = () => {
                 </table>
               </div>
             )}
+            </div>
+
+            <div className="bg-surface rounded-xl md:rounded-2xl border border-border shadow-card overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-5 border-b border-border bg-secondary/20">
+                <div>
+                  <h2 className="font-display text-base md:text-lg font-bold text-foreground">Upcoming Bookings</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Scheduled from today onward</p>
+                </div>
+                <Link
+                  to="/admin/bookings"
+                  className="text-xs md:text-sm text-primary font-semibold hover:text-primary-strong transition-colors duration-200 inline-flex items-center gap-1 mt-2 sm:mt-0"
+                >
+                  Open bookings <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              {loading ? (
+                <div className="p-10 text-center space-y-2">
+                  <div className="inline-block animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                  <p className="text-sm text-muted-foreground">Loading…</p>
+                </div>
+              ) : upcomingBookings.length === 0 ? (
+                <div className="p-8 md:p-12 text-center">
+                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-secondary/50 mb-4">
+                    <CalendarCheck className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="font-medium text-foreground mb-1">No upcoming bookings</p>
+                  <p className="text-sm text-muted-foreground">Create bookings to populate this list</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {upcomingBookings.map((booking) => (
+                    <div key={booking.id} className="p-4 md:p-5">
+                      <p className="font-medium text-foreground">
+                        {requestLookup[booking.service_request_id ?? ""] ?? "Request"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(booking.scheduled_date).toLocaleDateString()} {booking.scheduled_time ? `at ${booking.scheduled_time}` : ""}
+                        {cleanerLookup[booking.cleaner_id ?? ""] ? ` • ${cleanerLookup[booking.cleaner_id ?? ""]}` : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </AdminLayout>

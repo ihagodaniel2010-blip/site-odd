@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,7 +29,7 @@ const LocalServicePage = lazy(async () => {
 
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin.tsx"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.tsx"));
-const AdminEstimates = lazy(() => import("./pages/admin/AdminEstimates.tsx"));
+const AdminRequests = lazy(() => import("./pages/admin/AdminEstimates.tsx"));
 const AdminPricing = lazy(() => import("./pages/admin/AdminPricing.tsx"));
 const AdminCustomers = lazy(() => import("./pages/admin/AdminCustomers.tsx"));
 const AdminAreas = lazy(() => import("./pages/admin/AdminAreas.tsx"));
@@ -99,12 +100,17 @@ const App = () => (
             {/* Admin */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/estimates" element={<AdminEstimates />} />
+            <Route path="/admin/requests" element={<AdminRequests />} />
+            <Route path="/admin/estimates" element={<Navigate to="/admin/requests" replace />} />
             <Route path="/admin/pricing" element={<AdminPricing />} />
             <Route path="/admin/customers" element={<AdminCustomers />} />
             <Route path="/admin/areas" element={<AdminAreas />} />
+            <Route path="/admin/areas-we-serve" element={<Navigate to="/admin/areas" replace />} />
+            <Route path="/admin/service-areas" element={<Navigate to="/admin/areas" replace />} />
+            <Route path="/admin/locations" element={<Navigate to="/admin/areas" replace />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/calendar" element={<AdminCalendar />} />
+            <Route path="/admin/bookings" element={<AdminCalendar />} />
+            <Route path="/admin/calendar" element={<Navigate to="/admin/bookings" replace />} />
             <Route path="/admin/portfolio" element={<AdminPortfolio />} />
             <Route path="/admin/services" element={<AdminServices />} />
             <Route path="/admin/media" element={<AdminMedia />} />

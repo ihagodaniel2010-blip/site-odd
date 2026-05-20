@@ -122,7 +122,7 @@ const logMessage = async (
   message: string,
   channel: "email" | "whatsapp" | "sms"
 ) => {
-  const subject = `Your ${COMPANY_NAME} estimate`;
+  const subject = `Your ${COMPANY_NAME} request`;
   const { error } = await supabase.from("messages").insert({
     estimate_request_id: estimate.id,
     full_name: estimate.full_name,
@@ -229,7 +229,7 @@ const AdminEstimates = () => {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this estimate request? This cannot be undone.")) return;
+    if (!confirm("Delete this request? This cannot be undone.")) return;
     const { error } = await supabase.from("service_requests").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
@@ -249,7 +249,7 @@ const AdminEstimates = () => {
   const sendVia = async (channel: "email" | "whatsapp" | "sms") => {
     if (!selected) return;
     const msg = messageDraft;
-    const subject = `Your ${COMPANY_NAME} estimate`;
+    const subject = `Your ${COMPANY_NAME} request`;
     if (channel === "email") {
       const encodedSubject = encodeURIComponent(subject);
       window.open(
@@ -310,8 +310,9 @@ const AdminEstimates = () => {
               Leads
             </p>
             <h1 className="font-display text-3xl font-semibold text-foreground mt-1">
-              Estimate Requests
+              Requests
             </h1>
+            <p className="text-sm text-muted-foreground mt-1">Unified requests inbox backed by service_requests.</p>
           </header>
 
           <div className="flex flex-col md:flex-row gap-3">
@@ -354,7 +355,7 @@ const AdminEstimates = () => {
               </div>
             ) : filtered.length === 0 ? (
               <div className="p-10 text-center text-sm text-muted-foreground">
-                No matching estimate requests.
+                No matching requests.
               </div>
             ) : (
               <div className="overflow-x-auto">

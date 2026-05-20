@@ -9,18 +9,45 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAdminSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "sonner";
 
-const CATEGORIES: { key: string; title: string; description: string }[] = [
-  { key: "company", title: "Company info", description: "Brand basics shown across the site." },
-  { key: "header", title: "Header", description: "Top bar CTA settings." },
-  { key: "footer", title: "Footer", description: "Description and copyright text." },
-  { key: "contact", title: "Contact / Get in touch", description: "Headings shown on the Contact page." },
-  { key: "social", title: "Social links", description: "Leave blank to hide an icon." },
-];
+const TAB_DEFS = [
+  {
+    key: "business",
+    title: "Business Info",
+    description: "Business identity and contact details.",
+    match: (settingKey: string) =>
+      ["company_name", "phone", "email", "address", "business_hours"].some((k) =>
+        settingKey.includes(k)
+      ),
+  },
+  {
+    key: "branding",
+    title: "Branding",
+    description: "Logo, brand visuals, and header style settings.",
+    match: (settingKey: string) =>
+      ["logo", "brand", "color", "header"].some((k) => settingKey.includes(k)),
+  },
+  {
+    key: "social",
+    title: "Social Links",
+    description: "Public social profile links.",
+    match: (settingKey: string) => settingKey.startsWith("social_"),
+  },
+  {
+    key: "lead",
+    title: "Lead Settings",
+    description: "Lead capture, notifications, and quote routing.",
+    match: (settingKey: string) =>
+      ["whatsapp", "quote", "notification", "contact", "lead"].some((k) =>
+        settingKey.includes(k)
+      ),
+  },
+] as const;
 
 const AdminSettings = () => {
   const { rows, loading, save } = useAdminSiteSettings();
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<(typeof TAB_DEFS)[number]["key"]>("business");
 
   useEffect(() => {
     const map: Record<string, string> = {};
@@ -58,6 +85,16 @@ const AdminSettings = () => {
     }
   };
 
+  const tabItems = TAB_DEFS.find((tab) => tab.key === activeTab)
+    ? rows.filter((row) => TAB_DEFS.find((tab) => tab.key === activeTab)?.match(row.setting_key))
+    : [];
+
+  const unassignedRows = rows.filter(
+    (row) => !TAB_DEFS.some((tab) => tab.match(row.setting_key))
+  );
+
+  const visibleRows = activeTab === "business" ? [...tabItems, ...unassignedRows] : tabItems;
+
   return (
     <AdminGuard>
       <AdminLayout>
@@ -90,61 +127,73 @@ const AdminSettings = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {CATEGORIES.map((cat) => {
-                const items = rows.filter((r) => r.category === cat.key);
-                if (items.length === 0) return null;
-                return (
-                  <section
-                    key={cat.key}
-                    className="bg-surface rounded-2xl border border-border shadow-card p-6 md:p-8"
+              <div className="bg-surface rounded-2xl border border-border shadow-card p-2 flex flex-wrap gap-2">
+                {TAB_DEFS.map((tab) => (
+                  <Button
+                    key={tab.key}
+                    type="button"
+                    variant={activeTab === tab.key ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setActiveTab(tab.key)}
                   >
-                    <h2 className="font-display text-xl font-semibold text-foreground">
-                      {cat.title}
-                    </h2>
-                    <p className="text-sm text-muted-foreground mb-5">{cat.description}</p>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {items.map((r) => (
-                        <div
-                          key={r.id}
-                          className={`space-y-1.5 ${r.setting_type === "textarea" ? "md:col-span-2" : ""}`}
-                        >
-                          <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-                            {r.label}
-                          </Label>
-                          {r.setting_type === "textarea" ? (
-                            <Textarea
-                              rows={3}
-                              value={draft[r.setting_key] ?? ""}
-                              onChange={(e) =>
-                                setDraft({ ...draft, [r.setting_key]: e.target.value })
+                    {tab.title}
+                  </Button>
+                ))}
+              </div>
+
+              <section className="bg-surface rounded-2xl border border-border shadow-card p-6 md:p-8">
+                <h2 className="font-display text-xl font-semibold text-foreground">
+                  {TAB_DEFS.find((tab) => tab.key === activeTab)?.title}
+                </h2>
+                <p className="text-sm text-muted-foreground mb-5">
+                  {TAB_DEFS.find((tab) => tab.key === activeTab)?.description}
+                </p>
+
+                {visibleRows.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No settings in this section yet.</p>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {visibleRows.map((r) => (
+                      <div
+                        key={r.id}
+                        className={`space-y-1.5 ${r.setting_type === "textarea" ? "md:col-span-2" : ""}`}
+                      >
+                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                          {r.label}
+                        </Label>
+                        {r.setting_type === "textarea" ? (
+                          <Textarea
+                            rows={3}
+                            value={draft[r.setting_key] ?? ""}
+                            onChange={(e) =>
+                              setDraft({ ...draft, [r.setting_key]: e.target.value })
+                            }
+                            onBlur={() => {
+                              if ((draft[r.setting_key] ?? "") !== (r.setting_value ?? "")) {
+                                onSave(r.setting_key);
                               }
-                              onBlur={() => {
-                                if ((draft[r.setting_key] ?? "") !== (r.setting_value ?? "")) {
-                                  onSave(r.setting_key);
-                                }
-                              }}
-                            />
-                          ) : (
-                            <Input
-                              type={r.setting_type === "url" ? "url" : "text"}
-                              value={draft[r.setting_key] ?? ""}
-                              placeholder={r.setting_type === "url" ? "https://…" : ""}
-                              onChange={(e) =>
-                                setDraft({ ...draft, [r.setting_key]: e.target.value })
+                            }}
+                          />
+                        ) : (
+                          <Input
+                            type={r.setting_type === "url" ? "url" : "text"}
+                            value={draft[r.setting_key] ?? ""}
+                            placeholder={r.setting_type === "url" ? "https://…" : ""}
+                            onChange={(e) =>
+                              setDraft({ ...draft, [r.setting_key]: e.target.value })
+                            }
+                            onBlur={() => {
+                              if ((draft[r.setting_key] ?? "") !== (r.setting_value ?? "")) {
+                                onSave(r.setting_key);
                               }
-                              onBlur={() => {
-                                if ((draft[r.setting_key] ?? "") !== (r.setting_value ?? "")) {
-                                  onSave(r.setting_key);
-                                }
-                              }}
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                );
-              })}
+                            }}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
             </div>
           )}
         </div>
