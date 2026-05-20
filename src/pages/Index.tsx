@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CtaBanner } from "@/components/CtaBanner";
+import { PortfolioBeforeAfterCard } from "@/components/PortfolioBeforeAfterCard";
 import { Seo } from "@/components/Seo";
 import { SectionHeader } from "@/components/SectionHeader";
 import { AreasWeServe } from "@/components/AreasWeServe";
+import { usePortfolioItems } from "@/hooks/usePortfolioItems";
 import { usePricingRules } from "@/hooks/usePricingRules";
 import heroKitchen from "@/assets/hero-kitchen.jpg";
 import imgHouse from "@/assets/service-house.jpg";
@@ -90,6 +92,7 @@ const HOME_SEO_SCHEMA = {
 const Home = () => {
   const navigate = useNavigate();
   const { pricing } = usePricingRules();
+  const { items: featuredPortfolioItems } = usePortfolioItems({ featuredOnly: true });
   const [quickQuote, setQuickQuote] = useState({
     zip: "",
     service: "standard",
@@ -458,37 +461,44 @@ const Home = () => {
           subtitle="See how our detailed cleaning process restores homes and offices to pristine condition."
         />
         <div className="grid lg:grid-cols-3 gap-5 md:gap-6">
-          {[
-            { label: "Living Room", before: "Cluttered with dust", after: "Sparkling & fresh", icon: HomeIcon },
-            { label: "Kitchen", before: "Grease buildup", after: "Gleaming surfaces", icon: Sparkles },
-            { label: "Bathrooms", before: "Soap scum & grime", after: "Hospital clean", icon: Wrench },
-          ].map((item, i) => (
-            <div key={i} className="reveal relative group overflow-hidden rounded-2xl shadow-card border border-border/60 hover:shadow-strong transition-all duration-300">
-              <div className="aspect-[4/3] bg-gradient-to-br from-muted to-muted-foreground/20 flex items-center justify-center relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <span className="grid h-12 w-12 place-items-center rounded-xl bg-muted mx-auto mb-3">
-                      <item.icon className="h-6 w-6 text-foreground/40" />
-                    </span>
-                    <p className="text-sm font-medium text-foreground/60">{item.before}</p>
-                  </div>
-                </div>
-                <div className="absolute top-0 left-0 px-3 py-2 bg-warning/90 text-white text-xs font-semibold rounded-br-lg">Before</div>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary-strong/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-2xl">
-                <div className="text-center">
-                  <span className="grid h-12 w-12 place-items-center rounded-xl bg-secondary text-primary mx-auto mb-3">
-                    <item.icon className="h-6 w-6" />
-                  </span>
-                  <p className="text-sm font-medium text-foreground">{item.after}</p>
-                </div>
-                <div className="absolute top-0 left-0 px-3 py-2 bg-success/90 text-white text-xs font-semibold rounded-br-lg">After</div>
-              </div>
-              <div className="p-5 md:p-6 relative z-10">
-                <h3 className="font-display text-lg font-semibold text-foreground mb-1">{item.label}</h3>
-                <p className="text-xs text-muted-foreground group-hover:text-primary transition-colors duration-300">Hover to see transformation →</p>
-              </div>
-            </div>
+          {(featuredPortfolioItems.length > 0 ? featuredPortfolioItems.slice(0, 3) : [
+            {
+              id: "fallback-living-room",
+              title: "Living Room",
+              description: "Professional detail cleaning for high-traffic living areas.",
+              category: "Standard Cleaning",
+              room: "Living Room",
+              before_image_url: null,
+              after_image_url: null,
+            },
+            {
+              id: "fallback-kitchen",
+              title: "Kitchen",
+              description: "Degreasing and surface restoration for a cleaner kitchen.",
+              category: "Deep Cleaning",
+              room: "Kitchen",
+              before_image_url: null,
+              after_image_url: null,
+            },
+            {
+              id: "fallback-bathroom",
+              title: "Bathroom",
+              description: "Soap-scum and buildup removal with polished finishing.",
+              category: "Residential",
+              room: "Bathroom",
+              before_image_url: null,
+              after_image_url: null,
+            },
+          ]).map((item) => (
+            <PortfolioBeforeAfterCard
+              key={item.id}
+              title={item.title}
+              description={item.description}
+              category={item.category}
+              room={item.room}
+              beforeImageUrl={item.before_image_url}
+              afterImageUrl={item.after_image_url}
+            />
           ))}
         </div>
       </section>

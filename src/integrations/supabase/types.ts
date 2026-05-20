@@ -250,6 +250,8 @@ export type Database = {
       portfolio_items: {
         Row: {
           active: boolean
+          after_image_url: string | null
+          before_image_url: string | null
           category: string | null
           created_at: string
           description: string | null
@@ -257,12 +259,17 @@ export type Database = {
           featured: boolean
           id: string
           image_url: string | null
+          is_featured: boolean
+          is_public: boolean
           location: string | null
+          room: string | null
           title: string
           updated_at: string
         }
         Insert: {
           active?: boolean
+          after_image_url?: string | null
+          before_image_url?: string | null
           category?: string | null
           created_at?: string
           description?: string | null
@@ -270,12 +277,17 @@ export type Database = {
           featured?: boolean
           id?: string
           image_url?: string | null
+          is_featured?: boolean
+          is_public?: boolean
           location?: string | null
+          room?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           active?: boolean
+          after_image_url?: string | null
+          before_image_url?: string | null
           category?: string | null
           created_at?: string
           description?: string | null
@@ -283,7 +295,10 @@ export type Database = {
           featured?: boolean
           id?: string
           image_url?: string | null
+          is_featured?: boolean
+          is_public?: boolean
           location?: string | null
+          room?: string | null
           title?: string
           updated_at?: string
         }
