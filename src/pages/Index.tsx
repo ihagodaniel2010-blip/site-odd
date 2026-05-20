@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -68,9 +68,30 @@ const whyUs = [
 ];
 
 const testimonials = [
-  { quote: "Very professional and easy to schedule. The house looked amazing after the first visit. We've been on a bi-weekly plan ever since.", name: "Marina C.", city: "Austin, TX" },
-  { quote: "Our office finally feels truly clean. The team is consistent, quiet during work hours, and pays attention to the small details.", name: "Daniel R.", city: "Round Rock, TX" },
-  { quote: "I booked a move-out clean and got my full deposit back. Fast booking, clear pricing, no surprises.", name: "Priya S.", city: "Cedar Park, TX" },
+  {
+    quote:
+      "Very professional and easy to schedule. The house looked amazing after the first visit. We've been on a bi-weekly plan ever since.",
+    name: "Marina C.",
+    city: "Lowell, MA",
+    rating: 5,
+    featured: true,
+  },
+  {
+    quote:
+      "Our office finally feels truly clean. The team is consistent, quiet during work hours, and pays attention to the small details.",
+    name: "Daniel R.",
+    city: "Chelmsford, MA",
+    rating: 5,
+    featured: false,
+  },
+  {
+    quote:
+      "I booked a move-out clean and got my full deposit back. Fast booking, clear pricing, no surprises.",
+    name: "Priya S.",
+    city: "Dracut, MA",
+    rating: 5,
+    featured: true,
+  },
 ];
 
 const HOME_SEO_KEYWORDS = [
@@ -95,6 +116,8 @@ const Home = () => {
   const { pricing } = usePricingRules();
   const { items: featuredPortfolioItems } = usePortfolioItems({ featuredOnly: true });
   const { reviews: publicReviews } = useReviews({ featuredOnly: true });
+  const mobileTestimonialsRef = useRef<HTMLDivElement | null>(null);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [quickQuote, setQuickQuote] = useState({
     zip: "",
     service: "standard",
@@ -120,8 +143,68 @@ const Home = () => {
           quote: review.review_text,
           name: review.customer_name,
           city: "Lowell, MA",
+          rating: Math.max(1, Math.min(5, review.rating || 5)),
+          featured: review.is_featured,
         }))
       : testimonials;
+
+  const transformationItems =
+    featuredPortfolioItems.length > 0
+      ? featuredPortfolioItems.slice(0, 3)
+      : [
+          {
+            id: "fallback-living-room",
+            title: "Living Room",
+            description: "Professional detail cleaning for high-traffic living areas.",
+            category: "Standard Cleaning",
+            room: "Living Room",
+            before_image_url: null,
+            after_image_url: null,
+          },
+          {
+            id: "fallback-kitchen",
+            title: "Kitchen",
+            description: "Degreasing and surface restoration for a cleaner kitchen.",
+            category: "Deep Cleaning",
+            room: "Kitchen",
+            before_image_url: null,
+            after_image_url: null,
+          },
+          {
+            id: "fallback-bathroom",
+            title: "Bathroom",
+            description: "Soap-scum and buildup removal with polished finishing.",
+            category: "Residential",
+            room: "Bathroom",
+            before_image_url: null,
+            after_image_url: null,
+          },
+        ];
+
+  useEffect(() => {
+    const node = mobileTestimonialsRef.current;
+    if (!node) return;
+
+    const onScroll = () => {
+      const cardWidth = node.clientWidth;
+      if (!cardWidth) return;
+      const nextIndex = Math.round(node.scrollLeft / cardWidth);
+      setActiveTestimonial(Math.max(0, Math.min(testimonialItems.length - 1, nextIndex)));
+    };
+
+    node.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => {
+      node.removeEventListener("scroll", onScroll);
+    };
+  }, [testimonialItems.length]);
+
+  const scrollToTestimonial = (index: number) => {
+    const node = mobileTestimonialsRef.current;
+    if (!node) return;
+    node.scrollTo({ left: node.clientWidth * index, behavior: "smooth" });
+  };
 
   return (
     <Layout>
@@ -445,62 +528,83 @@ const Home = () => {
             title="Trusted By Local Homeowners" 
             subtitle="See why over 1,200+ customers choose Paiva Cleaners for their homes and businesses."
           />
-          <div className="grid md:grid-cols-3 gap-5 md:gap-6">
+          <div className="hidden md:grid md:grid-cols-3 gap-5 md:gap-6">
             {testimonialItems.map((t) => (
               <div key={t.name} className="reveal group bg-surface rounded-xl md:rounded-2xl p-6 md:p-7 shadow-card hover:shadow-strong hover:border-primary/20 border border-border/60 transition-all duration-300 flex flex-col">
                 <div className="flex gap-0.5 mb-3 md:mb-4">
-                  {[...Array(5)].map((_, i) => (
+                  {[...Array(t.rating)].map((_, i) => (
                     <Star key={i} className="h-4 md:h-5 w-4 md:w-5 fill-warning text-warning" />
                   ))}
                 </div>
                 <p className="text-sm md:text-base text-foreground/90 leading-relaxed mb-5 md:mb-6 flex-1 italic">"{t.quote}"</p>
                 <div className="pt-4 md:pt-5 border-t border-border group-hover:border-primary/20 transition-colors duration-300">
+                  {t.featured && (
+                    <span className="mb-2 inline-flex rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                      Featured
+                    </span>
+                  )}
                   <p className="font-semibold text-foreground text-sm md:text-base">{t.name}</p>
                   <p className="text-xs md:text-sm text-muted-foreground">{t.city}</p>
                 </div>
               </div>
             ))}
           </div>
+
+          <div className="md:hidden">
+            <div
+              ref={mobileTestimonialsRef}
+              className="-mx-4 flex snap-x snap-mandatory overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {testimonialItems.map((t) => (
+                <div key={`mobile-${t.name}`} className="w-full shrink-0 snap-start pr-3 last:pr-0">
+                  <div className="h-full rounded-xl border border-border/60 bg-surface p-5 shadow-card">
+                    <div className="mb-3 flex gap-0.5">
+                      {[...Array(t.rating)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-warning text-warning" />
+                      ))}
+                    </div>
+                    {t.featured && (
+                      <span className="mb-3 inline-flex rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                        Featured
+                      </span>
+                    )}
+                    <p className="text-sm leading-relaxed text-foreground/90">"{t.quote}"</p>
+                    <div className="mt-4 border-t border-border pt-3">
+                      <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                      <p className="text-xs text-muted-foreground">{t.city}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 flex items-center justify-center gap-2">
+              {testimonialItems.map((item, index) => (
+                <button
+                  key={`dot-${item.name}-${index}`}
+                  type="button"
+                  aria-label={`Go to testimonial ${index + 1}`}
+                  aria-current={activeTestimonial === index}
+                  onClick={() => scrollToTestimonial(index)}
+                  className={`h-2.5 rounded-full transition-all ${
+                    activeTestimonial === index ? "w-6 bg-primary" : "w-2.5 bg-border"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       {/* BEFORE / AFTER */}
-      <section className="container py-16 md:py-20">
+      <section className="container py-14 md:py-20">
         <SectionHeader
           eyebrow="The Difference We Make"
           title="Transformations That Speak For Themselves"
           subtitle="See how our detailed cleaning process restores homes and offices to pristine condition."
         />
         <div className="grid lg:grid-cols-3 gap-5 md:gap-6">
-          {(featuredPortfolioItems.length > 0 ? featuredPortfolioItems.slice(0, 3) : [
-            {
-              id: "fallback-living-room",
-              title: "Living Room",
-              description: "Professional detail cleaning for high-traffic living areas.",
-              category: "Standard Cleaning",
-              room: "Living Room",
-              before_image_url: null,
-              after_image_url: null,
-            },
-            {
-              id: "fallback-kitchen",
-              title: "Kitchen",
-              description: "Degreasing and surface restoration for a cleaner kitchen.",
-              category: "Deep Cleaning",
-              room: "Kitchen",
-              before_image_url: null,
-              after_image_url: null,
-            },
-            {
-              id: "fallback-bathroom",
-              title: "Bathroom",
-              description: "Soap-scum and buildup removal with polished finishing.",
-              category: "Residential",
-              room: "Bathroom",
-              before_image_url: null,
-              after_image_url: null,
-            },
-          ]).map((item) => (
+          {transformationItems.map((item) => (
             <PortfolioBeforeAfterCard
               key={item.id}
               title={item.title}

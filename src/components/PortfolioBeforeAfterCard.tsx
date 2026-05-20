@@ -36,7 +36,7 @@ export const PortfolioBeforeAfterCard = ({
   );
 
   return (
-    <article className="reveal group overflow-hidden rounded-2xl border border-border/60 bg-surface shadow-card transition-all duration-300 hover:shadow-strong">
+    <article className="group overflow-hidden rounded-2xl border border-border/60 bg-surface shadow-card transition-all duration-300 hover:shadow-strong">
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={beforeUrl}
