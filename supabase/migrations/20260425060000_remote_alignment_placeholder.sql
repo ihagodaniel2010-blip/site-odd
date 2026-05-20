@@ -1,0 +1,2 @@
+-- Placeholder migration to align local history with remote migration 20260425060000.
+-- This migration is intentionally empty because it was already applied in the remote database.

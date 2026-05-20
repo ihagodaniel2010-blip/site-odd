@@ -236,22 +236,54 @@ ALTER TABLE public.areas_served
   ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
 DO $$
+DECLARE
+  zone_expr text;
+  display_order_expr text;
+  active_expr text;
 BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.tables
     WHERE table_schema = 'public' AND table_name = 'areas_we_serve'
   ) THEN
-    INSERT INTO public.areas_served (city, state, zone, display_order, active)
-    SELECT
-      a.city,
-      COALESCE(a.state, 'MA'),
-      COALESCE(a.zone, 'regular'),
-      COALESCE(a.display_order, 0),
-      COALESCE(a.active, true)
-    FROM public.areas_we_serve a
-    WHERE NOT EXISTS (
-      SELECT 1 FROM public.areas_served s
-      WHERE lower(s.city) = lower(a.city)
+    zone_expr := CASE
+      WHEN EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'areas_we_serve' AND column_name = 'zone'
+      ) THEN 'COALESCE(a.zone, ''regular'')'
+      ELSE '''regular'''
+    END;
+
+    display_order_expr := CASE
+      WHEN EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'areas_we_serve' AND column_name = 'display_order'
+      ) THEN 'COALESCE(a.display_order, 0)'
+      ELSE '0'
+    END;
+
+    active_expr := CASE
+      WHEN EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'areas_we_serve' AND column_name = 'active'
+      ) THEN 'COALESCE(a.active, true)'
+      WHEN EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'areas_we_serve' AND column_name = 'is_active'
+      ) THEN 'COALESCE(a.is_active, true)'
+      ELSE 'true'
+    END;
+
+    EXECUTE format(
+      'INSERT INTO public.areas_served (city, state, zone, display_order, active)
+       SELECT a.city, COALESCE(a.state, ''MA''), %s, %s, %s
+       FROM public.areas_we_serve a
+       WHERE NOT EXISTS (
+         SELECT 1 FROM public.areas_served s
+         WHERE lower(s.city) = lower(a.city)
+       )',
+      zone_expr,
+      display_order_expr,
+      active_expr
     );
   END IF;
 END
@@ -555,7 +587,7 @@ BEGIN
       e.city,
       e.zip_code,
       e.service_type,
-      COALESCE(e.home_size, e.bedrooms),
+      COALESCE(e.bedrooms, ''),
       e.frequency,
       NULLIF(regexp_replace(COALESCE(e.bedrooms, ''), '[^0-9]', '', 'g'), '')::integer,
       NULLIF(regexp_replace(COALESCE(e.bathrooms, ''), '[^0-9\.]', '', 'g'), '')::numeric,
@@ -563,8 +595,8 @@ BEGIN
         WHEN jsonb_typeof(e.estimate_breakdown) = 'object' THEN COALESCE(e.estimate_breakdown -> 'extras_selected', '[]'::jsonb)
         ELSE '[]'::jsonb
       END,
-      e.estimated_price_min,
-      e.estimated_price_max,
+      e.calculated_estimate,
+      e.calculated_estimate,
       COALESCE(NULLIF(e.status::text, ''), 'new'),
       e.notes,
       e.preferred_date,
