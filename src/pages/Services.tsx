@@ -85,7 +85,7 @@ const Services = () => {
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Popular City Pages</p>
           <h2 className="font-display text-2xl font-semibold text-foreground md:text-4xl">Explore local service pages for nearby cities</h2>
           <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
-            These pages help local visitors find the right cleaning service faster and give Google stronger city-specific relevance.
+            We serve multiple cities across the greater Lowell area. Find the right cleaning service close to where you live.
           </p>
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

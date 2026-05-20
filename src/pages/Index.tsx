@@ -238,7 +238,7 @@ const Home = () => {
                 <Link to="/contact">Get My Instant Quote <ArrowRight className="h-5 w-5" /></Link>
               </Button>
               <Button asChild variant="outline" size="xl">
-                <Link to="/house-cleaning">View Services</Link>
+                <Link to="/services">View Services</Link>
               </Button>
             </div>
             <div className="flex flex-wrap gap-x-6 gap-y-3 pt-4">
@@ -303,7 +303,7 @@ const Home = () => {
             <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-semibold text-foreground">
               See Pricing In 60 Seconds
             </h2>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Built for local leads from Google and Facebook Ads. No card required.</p>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">No card required. Fill in your details and see an estimated price right away.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-2 md:gap-3">
             <Input

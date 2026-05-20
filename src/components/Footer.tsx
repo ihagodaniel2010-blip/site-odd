@@ -65,10 +65,11 @@ export const Footer = () => {
           <ul className="space-y-3 text-sm">
             {[
               ["Home", "/"],
-              ["About", "/about"],
+              ["Services", "/services"],
+              ["Portfolio", "/portfolio"],
               ["Areas We Serve", "/areas-we-serve"],
+              ["About", "/about"],
               ["Contact", "/contact"],
-              ["Get Estimate", "/contact"],
             ].map(([label, to]) => (
               <li key={label}>
                 <Link to={to} className="hover:text-white transition-smooth story-link">

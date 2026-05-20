@@ -11,27 +11,15 @@ export const NAV = [
     ],
   },
   {
-    label: "Commercial Cleaning",
+    label: "Commercial",
     to: "/commercial-cleaning",
     children: [
+      { label: "Commercial Cleaning", to: "/commercial-cleaning" },
       { label: "Office Cleaning", to: "/office-cleaning" },
-      { label: "Clinic Cleaning", to: "/commercial-cleaning" },
-      { label: "Retail Cleaning", to: "/commercial-cleaning" },
-      { label: "Post Construction Cleaning", to: "/commercial-cleaning" },
     ],
   },
   { label: "Services", to: "/services" },
   { label: "Portfolio", to: "/portfolio" },
-  {
-    label: "More",
-    to: "/areas-we-serve",
-    children: [
-      { label: "Areas We Serve", to: "/areas-we-serve" },
-      { label: "About", to: "/about" },
-      { label: "FAQ", to: "/contact" },
-      { label: "Contact", to: "/contact" },
-    ],
-  },
   { label: "Contact", to: "/contact" },
 ] as const;
 
